@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.yarn/
+
+# React Native
+.expo/
+dist/
+build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Android
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/.externalNativeBuild/
+android/.cxx/
+android/*.keystore
+!android/app/debug.keystore
+
+# iOS (not in scope but kept for safety)
+ios/Pods/
+ios/*.xcworkspace/xcuserdata/
+
+# Environment / secrets
+.env
+.env.local
+.env.production
+*.secret
+
+# Editor
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+
+# Test coverage
+coverage/
+
+# Metro bundler
+.metro-health-check*
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Crash logs (local only, never committed)
+crash_logs/
+
+# Detox
+.detox/
+artifacts/

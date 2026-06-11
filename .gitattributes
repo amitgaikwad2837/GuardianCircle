@@ -1,0 +1,21 @@
+# Normalize line endings to LF on commit (cross-platform consistency)
+* text=auto eol=lf
+
+# Force LF for source files
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.kt    text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.sql   text eol=lf
+*.yml   text eol=lf
+*.xml   text eol=lf
+*.gradle text eol=lf
+
+# Binary files — no conversion
+*.docx  binary
+*.png   binary
+*.jpg   binary
+*.apk   binary
+*.keystore binary
