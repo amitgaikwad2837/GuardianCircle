@@ -66,7 +66,7 @@ export class SQLiteEvidenceRepository implements IEvidenceRepository {
       'SELECT * FROM evidence WHERE incident_id = ? ORDER BY captured_at DESC',
       [incidentId],
     );
-    return (result.rows._array as EvidenceRow[]).map(rowToEvidence);
+    return ((result as any).rows._array as EvidenceRow[]).map(rowToEvidence);
   }
 
   async getRecent(limit = 20): Promise<Evidence[]> {
@@ -74,7 +74,7 @@ export class SQLiteEvidenceRepository implements IEvidenceRepository {
       'SELECT * FROM evidence ORDER BY captured_at DESC LIMIT ?',
       [limit],
     );
-    return (result.rows._array as EvidenceRow[]).map(rowToEvidence);
+    return ((result as any).rows._array as EvidenceRow[]).map(rowToEvidence);
   }
 
   async delete(id: string): Promise<void> {

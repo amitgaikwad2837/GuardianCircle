@@ -73,7 +73,6 @@ export default function GuardianFormScreen(): React.JSX.Element {
         displayName: displayName.trim(),
         phoneNumber: phoneNumber.trim(),
         notificationPriority: store.guardians.length + 1,
-        notes: notes.trim() || undefined,
       });
 
       store.addGuardian(guardian);

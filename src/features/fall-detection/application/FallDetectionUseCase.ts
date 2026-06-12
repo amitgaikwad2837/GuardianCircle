@@ -34,7 +34,8 @@ class FallDetectionUseCaseClass {
 
   start(): void {
     if (this.isRunning) return;
-    this.emitter = new NativeEventEmitter(NativeModules.SensorModule as object);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.emitter = new NativeEventEmitter(NativeModules.SensorModule as any);
     this.accelSub = this.emitter.addListener('GC_ACCELEROMETER_DATA', this.onSample);
     this.isRunning = true;
     Logger.info(TAG, 'Fall detection started');

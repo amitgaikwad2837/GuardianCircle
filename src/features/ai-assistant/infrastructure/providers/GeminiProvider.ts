@@ -63,7 +63,7 @@ export class GeminiProvider implements IAIProvider {
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`,
-        { signal: AbortSignal.timeout(8000) },
+        { signal: (AbortSignal as any).timeout(8000) },
       );
       return response.ok;
     } catch {

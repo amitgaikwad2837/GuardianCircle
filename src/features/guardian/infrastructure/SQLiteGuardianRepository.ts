@@ -61,7 +61,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       const result = this.db.execute(
         'SELECT phone_number FROM guardians WHERE is_active = 1 AND is_decoy = 0',
       );
-      const phones = (result.rows._array as Array<{ phone_number: string }>)
+      const phones = ((result as any).rows._array as Array<{ phone_number: string }>)
         .map((r) => r.phone_number);
       SOSFallback.setGuardianPhones(phones);
     } catch (err) {
@@ -73,14 +73,14 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     const result = this.db.execute(
       'SELECT * FROM guardians ORDER BY notification_priority ASC',
     );
-    return (result.rows._array as GuardianRow[]).map(rowToGuardian);
+    return ((result as any).rows._array as GuardianRow[]).map(rowToGuardian);
   }
 
   async getActiveGuardians(): Promise<Guardian[]> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE is_active = 1 AND is_decoy = 0 ORDER BY notification_priority ASC',
     );
-    return (result.rows._array as GuardianRow[]).map(rowToGuardian);
+    return ((result as any).rows._array as GuardianRow[]).map(rowToGuardian);
   }
 
   async getById(id: string): Promise<Guardian | null> {
@@ -88,7 +88,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE id = ? LIMIT 1',
       [id],
     );
-    const row = (result.rows._array as GuardianRow[])[0];
+    const row = ((result as any).rows._array as GuardianRow[])[0];
     return row != null ? rowToGuardian(row) : null;
   }
 
@@ -97,7 +97,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE signing_public_key = ? LIMIT 1',
       [signingPublicKey],
     );
-    const row = (result.rows._array as GuardianRow[])[0];
+    const row = ((result as any).rows._array as GuardianRow[])[0];
     return row != null ? rowToGuardian(row) : null;
   }
 
@@ -111,7 +111,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE phone_number = ? LIMIT 1',
       [phoneNumber],
     );
-    const row = (result.rows._array as GuardianRow[])[0];
+    const row = ((result as any).rows._array as GuardianRow[])[0];
     return row != null ? rowToGuardian(row) : null;
   }
 
@@ -201,7 +201,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     const result = this.db.execute(
       'SELECT COUNT(*) as cnt FROM guardians WHERE is_active = 1 AND is_decoy = 0',
     );
-    const rows = result.rows._array as [{ cnt: number }];
+    const rows = (result as any).rows._array as [{ cnt: number }];
     return rows[0]?.cnt ?? 0;
   }
 
@@ -211,7 +211,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'DELETE FROM guardians WHERE removal_scheduled_at IS NOT NULL AND removal_scheduled_at <= ?',
       [now],
     );
-    const deleted = result.rowsAffected ?? 0;
+    const deleted = (result as any).rowsAffected ?? 0;
     if (deleted > 0) Logger.info(TAG, 'pruneScheduledRemovals', { deleted });
     return deleted;
   }

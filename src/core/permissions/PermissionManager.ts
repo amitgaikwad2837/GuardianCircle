@@ -10,14 +10,16 @@ export type AppPermission =
   | 'camera'
   | 'notifications';
 
-const ANDROID_PERMISSIONS: Record<AppPermission, string | null> = {
-  sms: PermissionsAndroid.PERMISSIONS.SEND_SMS,
-  call: PermissionsAndroid.PERMISSIONS.CALL_PHONE,
-  location: PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  backgroundLocation: PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
-  contacts: PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-  microphone: PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-  camera: PermissionsAndroid.PERMISSIONS.CAMERA,
+import type { Permission } from 'react-native';
+
+const ANDROID_PERMISSIONS: Record<AppPermission, Permission | null> = {
+  sms: PermissionsAndroid.PERMISSIONS.SEND_SMS as Permission,
+  call: PermissionsAndroid.PERMISSIONS.CALL_PHONE as Permission,
+  location: PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION as Permission,
+  backgroundLocation: PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION as Permission,
+  contacts: PermissionsAndroid.PERMISSIONS.READ_CONTACTS as Permission,
+  microphone: PermissionsAndroid.PERMISSIONS.RECORD_AUDIO as Permission,
+  camera: PermissionsAndroid.PERMISSIONS.CAMERA as Permission,
   notifications: null, // Handled via Notifee on Android 13+
 };
 

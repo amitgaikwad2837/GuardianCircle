@@ -42,7 +42,7 @@ export default function JourneyDashboardScreen(): React.JSX.Element {
       setHistory(hist);
       setPending(checkins);
     } catch (err) {
-      Logger.error(TAG, 'Load failed', err);
+      Logger.error(TAG, 'Load failed', { message: err instanceof Error ? err.message : String(err) });
     } finally {
       setLoading(false);
     }

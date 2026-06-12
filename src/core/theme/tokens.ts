@@ -17,6 +17,9 @@ export const colors = {
   info: '#1565C0',
   neutral: '#546E7A',
 
+  // Success
+  success: '#2E7D32',
+
   // UI — Light mode
   light: {
     background: '#FAFAFA',
@@ -74,6 +77,8 @@ export const typography = {
   bodyMedium: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
   labelLarge: { fontSize: 14, fontWeight: '600' as const, lineHeight: 20 },
   labelMedium: { fontSize: 12, fontWeight: '500' as const, lineHeight: 16 },
+  titleSmall: { fontSize: 14, fontWeight: '500' as const, lineHeight: 20 },
+  bodySmall: { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
 } as const;
 
 export const touchTargets = {

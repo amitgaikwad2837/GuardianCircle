@@ -27,7 +27,7 @@ class LocationServiceClass {
   async requestPermission(): Promise<boolean> {
     if (Platform.OS !== 'android') return false;
     const result = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION as import('react-native').Permission,
     );
     return result === PermissionsAndroid.RESULTS.GRANTED;
   }

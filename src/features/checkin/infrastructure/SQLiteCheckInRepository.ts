@@ -66,7 +66,7 @@ export class SQLiteCheckInRepository implements ICheckInRepository {
 
   async getById(id: string): Promise<CheckIn | null> {
     const result = await this.db.execute('SELECT * FROM checkins WHERE id = ?', [id]);
-    const rows = result.rows._array as CheckInRow[];
+    const rows = (result as any).rows._array as CheckInRow[];
     return rows[0] ? rowToCheckIn(rows[0]) : null;
   }
 
@@ -74,7 +74,7 @@ export class SQLiteCheckInRepository implements ICheckInRepository {
     const result = await this.db.execute(
       `SELECT * FROM checkins WHERE status = 'pending' ORDER BY scheduled_at ASC`,
     );
-    return (result.rows._array as CheckInRow[]).map(rowToCheckIn);
+    return ((result as any).rows._array as CheckInRow[]).map(rowToCheckIn);
   }
 
   async getDue(before: Date): Promise<CheckIn[]> {
@@ -82,14 +82,14 @@ export class SQLiteCheckInRepository implements ICheckInRepository {
       `SELECT * FROM checkins WHERE status = 'pending' AND scheduled_at <= ? ORDER BY scheduled_at ASC`,
       [before.getTime()],
     );
-    return (result.rows._array as CheckInRow[]).map(rowToCheckIn);
+    return ((result as any).rows._array as CheckInRow[]).map(rowToCheckIn);
   }
 
   async getRecurring(): Promise<CheckIn[]> {
     const result = await this.db.execute(
       `SELECT * FROM checkins WHERE type = 'recurring' AND status IN ('pending','completed') ORDER BY scheduled_at ASC`,
     );
-    return (result.rows._array as CheckInRow[]).map(rowToCheckIn);
+    return ((result as any).rows._array as CheckInRow[]).map(rowToCheckIn);
   }
 
   async updateStatus(id: string, status: CheckInStatus, timestamp?: Date): Promise<void> {

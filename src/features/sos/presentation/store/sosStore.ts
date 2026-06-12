@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { EscalationLevel } from '@core/events/EventTypes';
 
-export type SOSStatus = 'idle' | 'countdown' | 'active' | 'cancelled' | 'resolved';
+export type SOSStatus = 'idle' | 'countdown' | 'active' | 'escalated' | 'cancelled' | 'resolved';
 
 interface SOSState {
   status: SOSStatus;

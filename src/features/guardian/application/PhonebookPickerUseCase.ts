@@ -1,5 +1,6 @@
 import { PermissionsAndroid, NativeModules } from 'react-native';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import type { CountryCode } from 'libphonenumber-js';
 
 export interface PhonebookEntry {
   displayName: string;
@@ -16,7 +17,7 @@ export interface PhonebookPickResult {
 export class PhonebookPickerUseCase {
   async execute(): Promise<PhonebookPickResult | null> {
     const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+      PermissionsAndroid.PERMISSIONS.READ_CONTACTS as import('react-native').Permission,
       {
         title: 'Access Contacts',
         message:
@@ -46,7 +47,7 @@ export class PhonebookPickerUseCase {
     return result;
   }
 
-  formatE164(raw: string, region = 'IN'): string {
+  formatE164(raw: string, region: CountryCode = 'IN'): string {
     const parsed = parsePhoneNumberFromString(raw, region);
     if (!parsed?.isValid()) throw new Error(`Invalid phone number: ${raw}`);
     return parsed.format('E.164');

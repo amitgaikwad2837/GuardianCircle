@@ -67,7 +67,7 @@ export const AppIconService = {
       PreferencesStore.setString(PREF_KEYS.APP_ICON_VARIANT, variant);
       Logger.info(TAG, `Icon variant set to ${variant} (${alias})`);
     } catch (err) {
-      Logger.error(TAG, `Failed to set icon variant ${variant}`, err as Error);
+      Logger.error(TAG, `Failed to set icon variant ${variant}`, { message: err instanceof Error ? err.message : String(err) });
       throw err;
     }
   },

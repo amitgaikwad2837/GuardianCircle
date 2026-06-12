@@ -31,7 +31,8 @@ export const DatabaseManager = {
   },
 
   async runMigrations(database: DB): Promise<void> {
-    const [{ user_version }] = database.execute('PRAGMA user_version').rows._array as [{ user_version: number }];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [{ user_version }] = ((database.execute('PRAGMA user_version') as any).rows._array) as [{ user_version: number }];
     let version = user_version ?? 0;
 
     const migrations = await this.loadMigrations();

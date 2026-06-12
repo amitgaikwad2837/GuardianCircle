@@ -26,6 +26,7 @@ export interface Theme {
     danger: string;
     info: string;
     neutral: string;
+    success: string;
   };
   spacing: typeof spacing;
   radius: typeof radius;
@@ -47,6 +48,7 @@ function buildTheme(scheme: ColorScheme): Theme {
       danger:      colors.danger,
       info:        colors.info,
       neutral:     colors.neutral,
+      success:     colors.success,
     },
     spacing,
     radius,

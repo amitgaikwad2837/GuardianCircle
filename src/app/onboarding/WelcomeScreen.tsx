@@ -49,7 +49,7 @@ export default function WelcomeScreen(): React.JSX.Element {
 
         <View style={styles.bullets} accessibilityRole="list">
           {TRUST_BULLETS.map((b) => (
-            <View key={b.text} style={styles.bullet} accessibilityRole="listitem">
+            <View key={b.text} style={styles.bullet} accessibilityRole="none">
               <Text style={styles.bulletIcon}>{b.icon}</Text>
               <Text style={styles.bulletText}>{b.text}</Text>
             </View>

@@ -125,7 +125,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
     const result = this.db.execute(
       `SELECT * FROM incidents WHERE status = 'active' ORDER BY triggered_at DESC LIMIT 1`,
     );
-    const rows = result.rows._array as IncidentRow[];
+    const rows = (result as any).rows._array as IncidentRow[];
     const row = rows[0];
     return row != null ? rowToEvent(row) : null;
   }
@@ -135,7 +135,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
       'SELECT * FROM incidents WHERE id = ? LIMIT 1',
       [id],
     );
-    const rows = result.rows._array as IncidentRow[];
+    const rows = (result as any).rows._array as IncidentRow[];
     const row = rows[0];
     return row != null ? rowToEvent(row) : null;
   }
@@ -145,7 +145,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
       'SELECT * FROM incidents ORDER BY triggered_at DESC LIMIT ?',
       [limit],
     );
-    return (result.rows._array as IncidentRow[]).map(rowToEvent);
+    return ((result as any).rows._array as IncidentRow[]).map(rowToEvent);
   }
 
   /** Records which guardian was alerted and via which method. */

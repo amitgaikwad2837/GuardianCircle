@@ -15,7 +15,7 @@ export class OpenAIProvider implements IAIProvider {
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${await this.getKey()}` },
-        signal: AbortSignal.timeout(5000),
+        signal: (AbortSignal as any).timeout(5000),
       });
       return response.ok;
     } catch {
@@ -63,7 +63,7 @@ export class OpenAIProvider implements IAIProvider {
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${key}` },
-        signal: AbortSignal.timeout(8000),
+        signal: (AbortSignal as any).timeout(8000),
       });
       return response.ok;
     } catch {
