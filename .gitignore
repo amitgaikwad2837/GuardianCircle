@@ -67,3 +67,6 @@ crash_logs/
 # Detox
 .detox/
 artifacts/
+
+# Additional sensitive files in docs/
+docs/android/
