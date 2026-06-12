@@ -11,7 +11,7 @@ module.exports = {
           '@features': './src/features',
           '@shared': './src/shared',
           '@app': './src/app',
-          '@assets': './assets',
+          '@assets': './src/assets',
         },
       },
     ],

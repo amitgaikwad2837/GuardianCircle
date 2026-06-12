@@ -58,6 +58,7 @@ class SmsModule(reactContext: ReactApplicationContext) :
             try {
                 send(phone, message, object : Promise {
                     override fun resolve(value: Any?) { results.pushString("sent") }
+                    override fun reject(code: String?) { results.pushString("failed"); failCount++ }
                     override fun reject(code: String?, message: String?) { results.pushString("failed"); failCount++ }
                     override fun reject(code: String?, throwable: Throwable?) { results.pushString("failed"); failCount++ }
                     override fun reject(code: String?, message: String?, throwable: Throwable?) { results.pushString("failed"); failCount++ }
@@ -66,7 +67,7 @@ class SmsModule(reactContext: ReactApplicationContext) :
                     override fun reject(code: String?, userInfo: WritableMap) {}
                     override fun reject(code: String?, message: String?, userInfo: WritableMap) {}
                     override fun reject(code: String?, message: String?, throwable: Throwable?, userInfo: WritableMap) {}
-                    override fun hasKey(key: String) = false
+                    override fun reject(code: String?, throwable: Throwable?, userInfo: WritableMap) {}
                 })
             } catch (_: Exception) {
                 results.pushString("failed")

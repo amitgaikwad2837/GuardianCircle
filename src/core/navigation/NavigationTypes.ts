@@ -46,8 +46,13 @@ export type SettingsStackParams = {
   SafetySettings: undefined;       // DV features — labelled "Safety" not "DV"
   DistressSettings: undefined;
   AIAssistant: undefined;
+  AISetup: undefined;
   PrivacySettings: undefined;
   AccessibilitySettings: undefined;
+  DecoyMode: undefined;
+  AppIconPicker: undefined;
+  Logs: undefined;
+  WipeData: undefined;
   About: undefined;
 };
 

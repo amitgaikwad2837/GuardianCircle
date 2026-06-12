@@ -22,11 +22,20 @@ android/captures/
 android/.externalNativeBuild/
 android/.cxx/
 android/*.keystore
+android/app/*.keystore
 !android/app/debug.keystore
 
 # iOS (not in scope but kept for safety)
 ios/Pods/
 ios/*.xcworkspace/xcuserdata/
+
+# Firebase — real google-services.json contains API keys; never commit
+android/app/google-services.json
+
+# Release signing credentials — never commit
+android/app/release.keystore
+*.release.keystore
+android/gradle.properties.local
 
 # Environment / secrets
 .env

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Defines which directories the FileProvider may expose via content:// URIs.
+  Used when sharing encrypted evidence files (audio, photos) via share intents.
+  Only the evidence sub-directory is exposed — not the entire app storage.
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Encrypted evidence files stored in app-private files dir -->
+    <files-path name="evidence" path="evidence/" />
+    <!-- Temporary files for sharing (auto-deleted after share completes) -->
+    <cache-path name="shared" path="share_temp/" />
+</paths>

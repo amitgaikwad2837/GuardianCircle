@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GuardianCircle Privacy Policy — no data collection, no accounts, everything stays on your device."/>
+  <title>Privacy Policy — GuardianCircle</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --indigo: #1A237E; --indigo-mid: #3F51B5; --indigo-light: #9FA8DA;
+      --green: #1B5E20; --green-mid: #2E7D32;
+      --bg: #fff; --bg2: #F8F9FA; --text: #1C1B1F; --text2: #49454F; --text3: #79747E;
+      --border: #E0E0E0; --radius: 12px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); background: var(--bg); line-height: 1.7; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo { width: 28px; height: 34px; }
+    .nav-name { font-weight: 700; font-size: 17px; }
+    .nav-name span:first-child { color: var(--indigo); }
+    .nav-name span:last-child  { color: var(--green); }
+    .back-link { font-size: 14px; color: var(--indigo); text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+
+    .hero {
+      background: linear-gradient(135deg, #EEF0FB 0%, #F1F8F1 100%);
+      padding: 64px 24px 48px; text-align: center;
+    }
+    .hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; color: var(--indigo); margin-bottom: 12px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 540px; margin: 0 auto; }
+    .updated { display: inline-block; margin-top: 16px; font-size: 13px; color: var(--text3); background: #fff; border: 1px solid var(--border); padding: 4px 12px; border-radius: 999px; }
+
+    .summary-strip {
+      background: var(--green); color: #fff;
+      padding: 20px 24px; text-align: center;
+    }
+    .summary-strip p { font-size: 15px; font-weight: 600; max-width: 640px; margin: 0 auto; opacity: 0.95; }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    .toc {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px 28px; margin-bottom: 48px;
+    }
+    .toc h2 { font-size: 14px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+    .toc ol { padding-left: 18px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--indigo); font-size: 14px; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    h2 { font-size: 22px; font-weight: 800; color: var(--indigo); margin: 48px 0 12px; padding-top: 8px; }
+    h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 24px 0 8px; }
+    p { font-size: 15px; color: var(--text2); margin-bottom: 14px; }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; }
+    li { font-size: 15px; color: var(--text2); margin-bottom: 6px; }
+    strong { color: var(--text); font-weight: 700; }
+
+    .highlight {
+      background: #F1F8F1; border-left: 4px solid var(--green);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; margin: 20px 0;
+    }
+    .highlight p { margin: 0; color: var(--green); font-weight: 600; font-size: 14px; }
+
+    .permission-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+    .permission-table th { background: var(--bg2); padding: 10px 14px; text-align: left; font-weight: 700; color: var(--text); border: 1px solid var(--border); }
+    .permission-table td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+    .permission-table tr:hover td { background: var(--bg2); }
+
+    .contact-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px 28px; margin-top: 32px;
+    }
+    .contact-card h3 { margin-top: 0; }
+    .contact-card a { color: var(--indigo); }
+
+    footer { background: var(--text); color: rgba(255,255,255,0.6); padding: 32px 24px; text-align: center; font-size: 13px; }
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; margin: 0 8px; }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="gc-logo" viewBox="0 0 200 240">
+    <path d="M100 8C89 8 38 26 38 74C38 122 64 158 100 172C136 158 162 122 162 74C162 26 111 8 100 8Z" fill="#1A237E"/>
+    <path d="M100 8C111 8 162 26 162 74C162 122 136 158 100 172L100 8Z" fill="#3F51B5" opacity=".5"/>
+    <path d="M81 16Q100 8 119 16" fill="none" stroke="#9FA8DA" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M100 34C92 34 56 48 56 84C56 114 76 138 100 150C124 138 144 114 144 84C144 48 108 34 100 34Z" fill="#1B5E20"/>
+    <path d="M100 34C108 34 144 48 144 84C144 114 124 138 100 150L100 34Z" fill="#2E7D32" opacity=".55"/>
+    <path d="M88 90L88 82C88 70 112 70 112 82L112 90" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    <rect x="82" y="90" width="36" height="26" rx="5" fill="#fff"/>
+    <circle cx="100" cy="101" r="5.5" fill="#1B5E20"/>
+    <rect x="97" y="101" width="6" height="9" rx="2" fill="#1B5E20"/>
+  </symbol>
+</svg>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <svg class="nav-logo" aria-label="GuardianCircle logo" role="img"><use href="#gc-logo"/></svg>
+    <span class="nav-name"><span>Guardian</span><span>Circle</span></span>
+  </a>
+  <a href="index.html" class="back-link">← Back to home</a>
+</nav>
+
+<div class="hero">
+  <h1>Privacy Policy</h1>
+  <p>GuardianCircle is built on one principle: your personal safety data belongs to you alone.</p>
+  <span class="updated">Last updated: June 11, 2025</span>
+</div>
+
+<div class="summary-strip">
+  <p>Plain English summary: We collect nothing. We have no servers. Your data never leaves your device.</p>
+</div>
+
+<div class="content">
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#data-we-collect">Data we collect</a></li>
+      <li><a href="#permissions">Android permissions</a></li>
+      <li><a href="#local-storage">Local storage</a></li>
+      <li><a href="#third-party">Third-party services</a></li>
+      <li><a href="#fcm">Firebase Cloud Messaging</a></li>
+      <li><a href="#ai">AI assistant (BYOK)</a></li>
+      <li><a href="#children">Children's privacy</a></li>
+      <li><a href="#data-deletion">Data deletion</a></li>
+      <li><a href="#changes">Changes to this policy</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </div>
+
+  <h2 id="overview">1. Overview</h2>
+  <p>
+    GuardianCircle ("the app", "we", "our") is a personal safety application developed for Android.
+    This Privacy Policy describes how the app handles information.
+  </p>
+  <div class="highlight">
+    <p>GuardianCircle operates entirely on your device. We have no backend servers, no user accounts, and no mechanism to receive or store any of your personal data.</p>
+  </div>
+  <p>
+    This policy applies to the GuardianCircle Android application distributed via the Google Play Store
+    and this website. By installing and using the app you agree to this policy.
+  </p>
+
+  <h2 id="data-we-collect">2. Data we collect</h2>
+  <p><strong>We collect no personal data.</strong> Specifically:</p>
+  <ul>
+    <li>We do not collect your name, email address, phone number, or any account credentials.</li>
+    <li>We do not collect your location.</li>
+    <li>We do not collect your contacts or guardian phone numbers.</li>
+    <li>We do not collect usage analytics, crash reports, or telemetry of any kind.</li>
+    <li>We do not use advertising SDKs or tracking pixels.</li>
+    <li>We do not use cookies on this website beyond those strictly necessary for the page to function.</li>
+  </ul>
+  <p>
+    There is no GuardianCircle account system. There is no GuardianCircle cloud service.
+    All data generated by the app is stored exclusively on your device.
+  </p>
+
+  <h2 id="permissions">3. Android permissions</h2>
+  <p>
+    The app requests certain Android permissions to deliver its safety features. Each permission is
+    requested at runtime with a plain-language explanation before you grant it. No permission is
+    required to install the app.
+  </p>
+  <table class="permission-table">
+    <thead>
+      <tr>
+        <th>Permission</th>
+        <th>Why it is needed</th>
+        <th>When used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Location</strong><br/>(fine + background)</td>
+        <td>Attaches your GPS coordinates to SOS alerts sent to guardians so they know where to find you.</td>
+        <td>Only during an active SOS, active journey, or when you explicitly trigger a check-in. Never collected passively.</td>
+      </tr>
+      <tr>
+        <td><strong>Send SMS</strong></td>
+        <td>Sends SOS alerts via SMS as a last-resort fallback when internet is unavailable.</td>
+        <td>Only when an SOS is triggered and FCM delivery cannot be confirmed.</td>
+      </tr>
+      <tr>
+        <td><strong>Body Sensors / Activity Recognition</strong></td>
+        <td>Detects falls and vehicle crashes using the device accelerometer.</td>
+        <td>Only when fall or crash detection is enabled in Settings. Sensor data is processed on-device and never stored.</td>
+      </tr>
+      <tr>
+        <td><strong>Notifications</strong></td>
+        <td>Displays SOS alerts received from your guardians and journey check-in reminders.</td>
+        <td>Required to receive alerts when the app is in the background.</td>
+      </tr>
+      <tr>
+        <td><strong>Foreground Service</strong></td>
+        <td>Keeps fall/crash detection and journey monitoring active while the screen is off.</td>
+        <td>Only while detection or journey mode is active.</td>
+      </tr>
+      <tr>
+        <td><strong>Vibration</strong></td>
+        <td>Provides haptic feedback on SOS confirmation and incoming alerts.</td>
+        <td>On SOS trigger and alert receipt.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    You can revoke any permission at any time in Android Settings → Apps → GuardianCircle → Permissions.
+    Revoking a permission disables only the specific feature that depends on it.
+  </p>
+
+  <h2 id="local-storage">4. Local storage</h2>
+  <p>All app data is stored locally on your device using:</p>
+  <ul>
+    <li><strong>SQLCipher encrypted database</strong> — stores SOS history, guardian records, journey logs, and geofences. The database is encrypted with a key that never leaves your device.</li>
+    <li><strong>Android Keystore</strong> — stores your cryptographic identity keys (ECDSA signing key, ECDH encryption key) in hardware-backed secure storage on supported devices.</li>
+    <li><strong>Android Keychain</strong> — stores PIN hashes and optional BYOK AI API keys.</li>
+    <li><strong>MMKV</strong> — stores non-sensitive preferences (theme, onboarding state).</li>
+  </ul>
+  <p>
+    No data from these stores is ever transmitted to GuardianCircle or any third party controlled by us.
+  </p>
+
+  <h2 id="third-party">5. Third-party services</h2>
+  <p>The app uses the following third-party components:</p>
+
+  <h3>Google Play Services</h3>
+  <p>
+    The app is distributed via Google Play and may interact with Google Play Services on your device.
+    Google's own privacy policy governs any data Google collects in this context.
+    See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+  </p>
+
+  <h3>Firebase Cloud Messaging (FCM)</h3>
+  <p>
+    FCM is used exclusively to deliver encrypted SOS alerts between paired users.
+    See <a href="#fcm">Section 6</a> for full details.
+  </p>
+
+  <p>
+    <strong>We do not use</strong> Google Analytics, Firebase Analytics, Crashlytics, Sentry,
+    Amplitude, Mixpanel, Adjust, AppsFlyer, or any other analytics or attribution SDK.
+    This is a permanent architectural decision documented in the project's ADR-007.
+  </p>
+
+  <h2 id="fcm">6. Firebase Cloud Messaging</h2>
+  <p>
+    GuardianCircle uses Firebase Cloud Messaging (FCM) as a transport layer to deliver SOS
+    notifications between paired devices. This is the only network component in the app.
+  </p>
+  <p>Important technical details about how FCM is used:</p>
+  <ul>
+    <li>All payloads are <strong>end-to-end encrypted</strong> using ECDH key exchange and AES-256-GCM before being passed to FCM. FCM only sees ciphertext.</li>
+    <li>Each message is <strong>signed</strong> with the sender's ECDSA private key. The recipient verifies the signature before decrypting.</li>
+    <li>FCM token exchange between paired users happens via SMS or QR code — GuardianCircle has no server involved in the pairing process.</li>
+    <li>Google's FCM infrastructure may log metadata (device token, timestamp, delivery status) per <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Google's Firebase Privacy</a> documentation.</li>
+  </ul>
+  <p>
+    If FCM delivery fails or the device has no internet, the app falls back to direct SMS.
+    SMS is sent from your device using your carrier — GuardianCircle does not route or intercept SMS.
+  </p>
+
+  <h2 id="ai">7. AI assistant (BYOK)</h2>
+  <p>
+    GuardianCircle includes an optional AI safety assistant. This feature uses a
+    <strong>Bring Your Own Key (BYOK)</strong> model — you supply your own API key
+    (OpenAI, Anthropic, or Google Gemini). GuardianCircle never sees, stores, or transmits your API key.
+  </p>
+  <ul>
+    <li>API keys are stored only in Android Keychain on your device.</li>
+    <li>When you send a message to the AI assistant, your device connects directly to the AI provider's API using your key. GuardianCircle does not proxy, log, or inspect these requests.</li>
+    <li>The AI provider's own privacy policy governs any data they process. Review their policies before use.</li>
+  </ul>
+  <p>
+    The AI assistant feature is entirely optional. The app's core safety features (SOS, guardians, journey)
+    do not depend on it.
+  </p>
+
+  <h2 id="children">8. Children's privacy</h2>
+  <p>
+    GuardianCircle is not directed at children under 13. We do not knowingly collect personal
+    information from children. Since the app collects no personal data from anyone, this is
+    a structural guarantee rather than a policy aspiration.
+  </p>
+  <p>
+    If you are a parent or guardian and believe your child is using this app in a way that concerns
+    you, please contact us using the details in Section 11.
+  </p>
+
+  <h2 id="data-deletion">9. Data deletion</h2>
+  <p>
+    Since all data is stored locally on your device, you are always in full control of deletion.
+  </p>
+  <ul>
+    <li><strong>Wipe all data</strong> — the app includes a Settings → Wipe all data function that deletes the encrypted database, clears all Keychain entries, deletes cryptographic keys from Android Keystore, clears MMKV preferences, and terminates the app. This action is immediate and irreversible.</li>
+    <li><strong>Uninstall</strong> — uninstalling the app removes all associated data per standard Android behaviour.</li>
+  </ul>
+  <p>
+    Because we hold no data on any server, there is no account deletion request needed and
+    no data to remove from our side.
+  </p>
+
+  <h2 id="changes">10. Changes to this policy</h2>
+  <p>
+    We may update this Privacy Policy from time to time. When we do, we will update the
+    "Last updated" date at the top of this page and, for significant changes, display an
+    in-app notice on the next app launch.
+  </p>
+  <p>
+    Continued use of the app after a policy update constitutes acceptance of the revised policy.
+    If you disagree with any change, you can stop using the app and wipe your local data as
+    described in Section 9.
+  </p>
+
+  <h2 id="contact">11. Contact</h2>
+  <div class="contact-card">
+    <h3>Questions about this policy?</h3>
+    <p>If you have questions, concerns, or requests regarding this Privacy Policy, please contact:</p>
+    <p>
+      <strong>GuardianCircle</strong><br/>
+      Email: <a href="mailto:privacy@guardiancircle.app">privacy@guardiancircle.app</a><br/>
+      GitHub Issues: <a href="https://github.com/amitgaikwad2837/GuardianCircle/issues" target="_blank" rel="noopener">github.com/amitgaikwad2837/GuardianCircle/issues</a>
+    </p>
+    <p style="margin-bottom:0; font-size:13px; color: var(--text3);">
+      We aim to respond to all privacy enquiries within 7 business days.
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 GuardianCircle · MIT License</p>
+  <p style="margin-top:10px;">
+    <a href="index.html">Home</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+  </p>
+</footer>
+
+</body>
+</html>

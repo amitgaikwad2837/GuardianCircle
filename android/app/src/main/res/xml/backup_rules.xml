@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 and below (API ≤ 30) backup rules.
+  All app data is excluded from cloud backup to protect user privacy.
+  The encrypted database and keys must NOT be backed up — they are device-bound
+  to the Android Keystore hardware and would be unreadable on any other device.
+-->
+<full-backup-content>
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+</full-backup-content>

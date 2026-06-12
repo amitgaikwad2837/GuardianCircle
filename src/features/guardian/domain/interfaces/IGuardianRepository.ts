@@ -2,8 +2,11 @@ import type { Guardian } from '../entities/Guardian';
 
 export interface IGuardianRepository {
   getAll(): Promise<Guardian[]>;
-  getActiveGuardians(): Promise<Guardian[]>;        // isActive=true, isDecoy=false (or decoy mode)
+  getActiveGuardians(): Promise<Guardian[]>;
   getById(id: string): Promise<Guardian | null>;
+  /** Look up guardian by their ECDSA signing key — used to authenticate FCM senders. */
+  findBySigningKey(signingPublicKey: string): Promise<Guardian | null>;
+  /** @deprecated Use findBySigningKey. */
   findByPublicKey(publicKey: string): Promise<Guardian | null>;
   findByPhone(phoneNumber: string): Promise<Guardian | null>;
   create(guardian: Omit<Guardian, 'id' | 'createdAt' | 'updatedAt'>): Promise<Guardian>;

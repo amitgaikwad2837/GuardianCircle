@@ -1,0 +1,4 @@
+GUARDIAN_RELEASE_STORE_FILE=guardian-release.keystore
+GUARDIAN_RELEASE_STORE_PASSWORD=welcome2Guardiancircle
+GUARDIAN_RELEASE_KEY_ALIAS=guardiancircle
+GUARDIAN_RELEASE_KEY_PASSWORD=welcome2Guardiancircle

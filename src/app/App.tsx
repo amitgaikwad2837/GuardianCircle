@@ -1,51 +1,81 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState, Suspense } from 'react';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from '@core/navigation/AppNavigator';
+import { RootModalManager } from './RootModalManager';
 import { DatabaseManager } from '@core/storage/database/DatabaseManager';
 import { IdentityManager } from '@core/crypto/IdentityManager';
 import { KeyManager } from '@core/crypto/KeyManager';
 import { GuardianNotificationHandler } from '@features/guardian/infrastructure/GuardianNotificationHandler';
+import { ThemeProvider } from '@core/theme/ThemeProvider';
+import { ErrorBoundary } from './ErrorBoundary';
+import { Logger } from '@core/logger/Logger';
+import { registerDependencies } from './bootstrap/registerDependencies';
 import { colors } from '@core/theme/tokens';
+
+const TAG = 'App';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 2, staleTime: 5 * 60 * 1000 },
+    queries: {
+      retry: 2,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
   },
 });
 
+type InitState = 'loading' | 'ready' | 'error';
+
 export default function App(): React.JSX.Element {
-  const [isReady, setIsReady] = useState(false);
-  const [initError, setInitError] = useState<string | null>(null);
+  const [initState, setInitState] = useState<InitState>('loading');
+  const [initError, setInitError] = useState<string>('');
 
   useEffect(() => {
-    void (async () => {
-      try {
-        // 1. Ensure database encryption key exists
-        const keyExists = await KeyManager.isHardwareBacked('db_encryption_key').catch(() => false);
-        if (!keyExists) await KeyManager.generateDatabaseKey();
-
-        // 2. Open and migrate encrypted database
-        await DatabaseManager.initialize();
-
-        // 3. Ensure local identity key pair exists
-        await IdentityManager.initialize();
-
-        // 4. Register FCM notification handler
-        GuardianNotificationHandler.initialize();
-
-        setIsReady(true);
-      } catch (err) {
-        setInitError(err instanceof Error ? err.message : 'Startup failed');
-      }
-    })();
+    void bootstrapApp();
   }, []);
 
-  if (!isReady && !initError) {
+  async function bootstrapApp(): Promise<void> {
+    try {
+      Logger.info(TAG, 'Bootstrap start');
+
+      // 1. Ensure hardware-backed database encryption key exists
+      const keyExists = await KeyManager.isHardwareBacked('db_encryption_key').catch(() => false);
+      if (!keyExists) {
+        Logger.info(TAG, 'Generating new database key');
+        await KeyManager.generateDatabaseKey();
+      }
+
+      // 2. Open and migrate the encrypted SQLCipher database
+      await DatabaseManager.initialize();
+      Logger.info(TAG, 'Database ready');
+
+      // 3b. Wire concrete implementations into the DI container
+      registerDependencies();
+
+      // 3. Ensure local identity key pairs exist (signing + FCM ECDH)
+      await IdentityManager.initialize();
+      await IdentityManager.initializeFCMKey();
+      Logger.info(TAG, 'Identity ready');
+
+      // 4. Register FCM push notification handler
+      await GuardianNotificationHandler.initialize();
+
+      Logger.info(TAG, 'Bootstrap complete');
+      setInitState('ready');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Startup failed';
+      Logger.error(TAG, 'Bootstrap failed', { message });
+      setInitError(message);
+      setInitState('error');
+    }
+  }
+
+  if (initState === 'loading') {
     return (
       <View style={styles.splash}>
         <ActivityIndicator size="large" color={colors.sosRed} />
@@ -53,29 +83,72 @@ export default function App(): React.JSX.Element {
     );
   }
 
-  if (initError) {
-    // Minimal error screen — cannot use full UI if DB failed
+  if (initState === 'error') {
     return (
       <View style={styles.splash}>
-        {/* Error text rendered as plain View to avoid circular dependency */}
+        <Text style={styles.errorTitle}>Unable to start GuardianCircle</Text>
+        <Text style={styles.errorBody}>{initError}</Text>
+        <Text style={styles.errorHint}>
+          If this error persists, reinstalling the app may resolve it.
+          Your alert contacts will still receive SMS even if the app cannot open.
+        </Text>
       </View>
     );
   }
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <NavigationContainer>
-            <AppNavigator />
-          </NavigationContainer>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+              <NavigationContainer>
+                <Suspense
+                  fallback={
+                    <View style={styles.splash}>
+                      <ActivityIndicator size="large" color={colors.sosRed} />
+                    </View>
+                  }
+                >
+                  <AppNavigator />
+                  <RootModalManager />
+                </Suspense>
+              </NavigationContainer>
+            </QueryClientProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  splash: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FAFAFA' },
+  splash: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAFAFA',
+    padding: 24,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#C62828',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  errorBody: {
+    fontSize: 14,
+    color: '#424242',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: 'monospace',
+  },
+  errorHint: {
+    fontSize: 13,
+    color: '#757575',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });

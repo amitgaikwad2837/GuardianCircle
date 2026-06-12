@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GuardianCircle Terms and Conditions — usage terms for the GuardianCircle personal safety app."/>
+  <title>Terms &amp; Conditions — GuardianCircle</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --indigo: #1A237E; --indigo-mid: #3F51B5; --indigo-light: #9FA8DA;
+      --green: #1B5E20; --green-mid: #2E7D32;
+      --bg: #fff; --bg2: #F8F9FA; --text: #1C1B1F; --text2: #49454F; --text3: #79747E;
+      --border: #E0E0E0; --radius: 12px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); background: var(--bg); line-height: 1.7; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo { width: 28px; height: 34px; }
+    .nav-name { font-weight: 700; font-size: 17px; }
+    .nav-name span:first-child { color: var(--indigo); }
+    .nav-name span:last-child  { color: var(--green); }
+    .back-link { font-size: 14px; color: var(--indigo); text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+
+    .hero {
+      background: linear-gradient(135deg, #EEF0FB 0%, #F1F8F1 100%);
+      padding: 64px 24px 48px; text-align: center;
+    }
+    .hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 800; color: var(--indigo); margin-bottom: 12px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 540px; margin: 0 auto; }
+    .updated { display: inline-block; margin-top: 16px; font-size: 13px; color: var(--text3); background: #fff; border: 1px solid var(--border); padding: 4px 12px; border-radius: 999px; }
+
+    .warning-strip {
+      background: #FFF8E1; border-top: 3px solid #F9A825;
+      padding: 20px 24px; text-align: center;
+    }
+    .warning-strip p { font-size: 14px; font-weight: 600; color: #6D4C00; max-width: 680px; margin: 0 auto; }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    .toc {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px 28px; margin-bottom: 48px;
+    }
+    .toc h2 { font-size: 14px; font-weight: 700; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+    .toc ol { padding-left: 18px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--indigo); font-size: 14px; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    h2 { font-size: 22px; font-weight: 800; color: var(--indigo); margin: 48px 0 12px; padding-top: 8px; }
+    h3 { font-size: 16px; font-weight: 700; color: var(--text); margin: 24px 0 8px; }
+    p { font-size: 15px; color: var(--text2); margin-bottom: 14px; }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; }
+    li { font-size: 15px; color: var(--text2); margin-bottom: 6px; }
+    strong { color: var(--text); font-weight: 700; }
+
+    .callout {
+      border-left: 4px solid var(--indigo);
+      background: #EEF0FB;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; margin: 20px 0;
+    }
+    .callout p { margin: 0; font-size: 14px; color: var(--indigo); font-weight: 600; }
+
+    .warning-callout {
+      border-left: 4px solid #E65100;
+      background: #FFF3E0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; margin: 20px 0;
+    }
+    .warning-callout p { margin: 0; font-size: 14px; color: #BF360C; font-weight: 600; }
+
+    .contact-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px 28px; margin-top: 32px;
+    }
+    .contact-card h3 { margin-top: 0; }
+    .contact-card a { color: var(--indigo); }
+
+    footer { background: var(--text); color: rgba(255,255,255,0.6); padding: 32px 24px; text-align: center; font-size: 13px; }
+    footer a { color: rgba(255,255,255,0.6); text-decoration: none; margin: 0 8px; }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="gc-logo" viewBox="0 0 200 240">
+    <path d="M100 8C89 8 38 26 38 74C38 122 64 158 100 172C136 158 162 122 162 74C162 26 111 8 100 8Z" fill="#1A237E"/>
+    <path d="M100 8C111 8 162 26 162 74C162 122 136 158 100 172L100 8Z" fill="#3F51B5" opacity=".5"/>
+    <path d="M81 16Q100 8 119 16" fill="none" stroke="#9FA8DA" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M100 34C92 34 56 48 56 84C56 114 76 138 100 150C124 138 144 114 144 84C144 48 108 34 100 34Z" fill="#1B5E20"/>
+    <path d="M100 34C108 34 144 48 144 84C144 114 124 138 100 150L100 34Z" fill="#2E7D32" opacity=".55"/>
+    <path d="M88 90L88 82C88 70 112 70 112 82L112 90" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+    <rect x="82" y="90" width="36" height="26" rx="5" fill="#fff"/>
+    <circle cx="100" cy="101" r="5.5" fill="#1B5E20"/>
+    <rect x="97" y="101" width="6" height="9" rx="2" fill="#1B5E20"/>
+  </symbol>
+</svg>
+
+<nav>
+  <a href="index.html" class="nav-brand">
+    <svg class="nav-logo" aria-label="GuardianCircle logo" role="img"><use href="#gc-logo"/></svg>
+    <span class="nav-name"><span>Guardian</span><span>Circle</span></span>
+  </a>
+  <a href="index.html" class="back-link">← Back to home</a>
+</nav>
+
+<div class="hero">
+  <h1>Terms &amp; Conditions</h1>
+  <p>Please read these terms carefully before using GuardianCircle. They govern your use of the app and this website.</p>
+  <span class="updated">Last updated: June 11, 2025</span>
+</div>
+
+<div class="warning-strip">
+  <p>⚠ GuardianCircle is a safety assistance tool, not a substitute for emergency services. Always call your local emergency number (911, 999, 112, or equivalent) in a life-threatening situation.</p>
+</div>
+
+<div class="content">
+
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#acceptance">Acceptance of terms</a></li>
+      <li><a href="#description">Description of the service</a></li>
+      <li><a href="#safety-disclaimer">Safety disclaimer — important</a></li>
+      <li><a href="#license">License</a></li>
+      <li><a href="#permitted-use">Permitted use</a></li>
+      <li><a href="#prohibited">Prohibited use</a></li>
+      <li><a href="#guardian-responsibility">Guardian responsibility</a></li>
+      <li><a href="#third-party">Third-party services</a></li>
+      <li><a href="#data-ownership">Data ownership</a></li>
+      <li><a href="#warranty">Disclaimer of warranties</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#indemnification">Indemnification</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#governing-law">Governing law</a></li>
+      <li><a href="#changes">Changes to these terms</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ol>
+  </div>
+
+  <h2 id="acceptance">1. Acceptance of terms</h2>
+  <p>
+    By downloading, installing, or using the GuardianCircle application ("the app") or this website
+    ("the site"), you ("user", "you") agree to be bound by these Terms and Conditions ("Terms").
+    If you do not agree to these Terms, do not use the app or the site.
+  </p>
+  <p>
+    These Terms constitute a legal agreement between you and the GuardianCircle project
+    ("GuardianCircle", "we", "our", "us"). Use of the app also constitutes acceptance of our
+    <a href="privacy.html">Privacy Policy</a>, which is incorporated by reference into these Terms.
+  </p>
+
+  <h2 id="description">2. Description of the service</h2>
+  <p>
+    GuardianCircle is a free, open-source personal safety application for Android that provides:
+  </p>
+  <ul>
+    <li>Manual and automatic SOS alert dispatch to trusted contacts ("guardians")</li>
+    <li>Fall detection and vehicle crash detection using device sensors</li>
+    <li>Journey monitoring with configurable check-in intervals</li>
+    <li>Encrypted peer-to-peer guardian notifications via Firebase Cloud Messaging</li>
+    <li>SMS fallback alerting when internet is unavailable</li>
+    <li>An optional AI safety assistant using user-provided API keys</li>
+    <li>Security features including duress PIN and decoy mode</li>
+  </ul>
+  <p>
+    The app operates entirely on your device. GuardianCircle does not operate any servers,
+    user accounts, or data infrastructure.
+  </p>
+
+  <h2 id="safety-disclaimer">3. Safety disclaimer — important</h2>
+
+  <div class="warning-callout">
+    <p>GuardianCircle is a supplementary safety tool. It does not replace professional emergency services. Never delay calling emergency services because you are using this app.</p>
+  </div>
+
+  <h3>Detection limitations</h3>
+  <p>
+    Fall detection and vehicle crash detection are best-effort features based on accelerometer
+    analysis. They:
+  </p>
+  <ul>
+    <li>May not detect all falls or crashes</li>
+    <li>May produce false positives (alerting guardians when no emergency exists)</li>
+    <li>Are affected by device placement, device model, and battery optimisation settings</li>
+    <li>Are not certified medical or automotive safety devices</li>
+  </ul>
+
+  <h3>Delivery limitations</h3>
+  <p>
+    SOS alerts depend on network availability and third-party delivery infrastructure (FCM, SMS carriers).
+    GuardianCircle cannot guarantee:
+  </p>
+  <ul>
+    <li>That alerts will be delivered within any specific timeframe</li>
+    <li>That alerts will be delivered at all in areas without network coverage</li>
+    <li>That recipient devices will receive or display notifications (device settings may suppress them)</li>
+  </ul>
+
+  <h3>Not a medical device</h3>
+  <p>
+    GuardianCircle is not a medical device and is not regulated as such. It is not intended to
+    diagnose, treat, cure, or prevent any medical condition.
+  </p>
+
+  <h2 id="license">4. License</h2>
+  <p>
+    GuardianCircle is released under the <strong>MIT License</strong>. You are free to use, copy,
+    modify, merge, publish, distribute, sublicense, and/or sell copies of the software, subject
+    to the conditions of the MIT License.
+  </p>
+  <div class="callout">
+    <p>The full license text is available in the LICENSE file in the GitHub repository at github.com/amitgaikwad2837/GuardianCircle.</p>
+  </div>
+  <p>
+    This license grants you rights to the <em>software</em>. It does not grant rights to the
+    GuardianCircle name, logo, or branding for use in derivative products without permission.
+  </p>
+
+  <h2 id="permitted-use">5. Permitted use</h2>
+  <p>You may use GuardianCircle to:</p>
+  <ul>
+    <li>Alert your own chosen guardians in situations where you feel unsafe</li>
+    <li>Monitor journeys and share your safety status with trusted contacts</li>
+    <li>Configure fall and crash detection for personal safety purposes</li>
+    <li>Build upon the open-source code in accordance with the MIT License</li>
+    <li>Install and use the app on devices you own or control</li>
+  </ul>
+
+  <h2 id="prohibited">6. Prohibited use</h2>
+  <p>You may not use GuardianCircle to:</p>
+  <ul>
+    <li>Send false SOS alerts or repeatedly trigger alerts with no genuine safety concern, which may cause unnecessary distress to guardians</li>
+    <li>Pair with someone as their guardian without their knowledge and consent</li>
+    <li>Harass, surveil, stalk, or monitor another person without their explicit consent</li>
+    <li>Attempt to intercept, decrypt, or tamper with another user's encrypted communications</li>
+    <li>Use the app in any way that violates applicable laws or regulations in your jurisdiction</li>
+    <li>Attempt to reverse-engineer the app for malicious purposes or to compromise other users' security</li>
+    <li>Impersonate another user or misrepresent your identity during guardian pairing</li>
+  </ul>
+  <p>
+    Violation of these prohibitions may result in your access to future app updates being restricted
+    and may expose you to legal liability.
+  </p>
+
+  <h2 id="guardian-responsibility">7. Guardian responsibility</h2>
+  <p>
+    If you accept a guardian pairing request from another user, you take on a voluntary responsibility
+    to respond to SOS alerts to the best of your ability. By accepting a pairing, you acknowledge:
+  </p>
+  <ul>
+    <li>You are not a professional emergency responder and are not required to take any specific action</li>
+    <li>You should call emergency services on behalf of the protected person when appropriate</li>
+    <li>GuardianCircle bears no liability for your response or non-response to an alert</li>
+    <li>You will keep the app installed and notifications enabled to fulfil this voluntary role</li>
+  </ul>
+
+  <h2 id="third-party">8. Third-party services</h2>
+  <p>
+    The app uses Firebase Cloud Messaging (FCM) operated by Google LLC. Your use of FCM is subject
+    to Google's Terms of Service. GuardianCircle is not responsible for the availability, performance,
+    or conduct of Google's services.
+  </p>
+  <p>
+    The optional AI assistant feature connects directly from your device to third-party AI providers
+    (OpenAI, Anthropic, Google Gemini) using an API key you supply. Your use of those services is
+    subject to each provider's own terms and privacy policies. GuardianCircle has no involvement in
+    or liability for those interactions.
+  </p>
+  <p>
+    The app is distributed via Google Play. Your download and installation is subject to Google
+    Play's Terms of Service.
+  </p>
+
+  <h2 id="data-ownership">9. Data ownership</h2>
+  <p>
+    All data stored by GuardianCircle — including your SOS history, guardian contacts, journey
+    logs, cryptographic keys, and settings — is stored solely on your device and belongs entirely
+    to you.
+  </p>
+  <p>
+    GuardianCircle has no access to this data, makes no claim to it, and cannot recover it if
+    you lose your device or wipe the app. You are solely responsible for any backup of data
+    you wish to preserve.
+  </p>
+
+  <h2 id="warranty">10. Disclaimer of warranties</h2>
+  <p>
+    <strong>THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED.</strong> To the maximum extent permitted by applicable law,
+    GuardianCircle disclaims all warranties including, but not limited to:
+  </p>
+  <ul>
+    <li>Implied warranties of merchantability and fitness for a particular purpose</li>
+    <li>Warranties that the app will be uninterrupted, error-free, or secure</li>
+    <li>Warranties that defects will be corrected</li>
+    <li>Warranties that alerts will be delivered successfully or within any timeframe</li>
+    <li>Warranties that fall or crash detection will detect all relevant events</li>
+  </ul>
+  <p>
+    Some jurisdictions do not allow the exclusion of implied warranties, so some of the above
+    may not apply to you.
+  </p>
+
+  <h2 id="liability">11. Limitation of liability</h2>
+  <p>
+    <strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, GUARDIANCIRCLE AND ITS
+    CONTRIBUTORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL,
+    OR PUNITIVE DAMAGES</strong>, including but not limited to:
+  </p>
+  <ul>
+    <li>Loss of life or personal injury arising from reliance on the app</li>
+    <li>Failure to deliver an SOS alert due to network conditions, device settings, or software bugs</li>
+    <li>False positive alerts causing distress to guardians</li>
+    <li>Loss of data following device failure or app uninstallation</li>
+    <li>Any damages arising from third-party service failures (FCM, SMS carriers, AI providers)</li>
+  </ul>
+  <p>
+    In jurisdictions where liability cannot be fully excluded, GuardianCircle's total liability
+    to you for all claims shall not exceed USD $10 (ten US dollars).
+  </p>
+  <p>
+    You acknowledge that this limitation of liability is a fundamental element of the agreement
+    between you and GuardianCircle, and that GuardianCircle would not provide the app without it.
+  </p>
+
+  <h2 id="indemnification">12. Indemnification</h2>
+  <p>
+    You agree to indemnify, defend, and hold harmless GuardianCircle and its contributors from
+    any claims, damages, losses, liabilities, costs, and expenses (including reasonable legal fees)
+    arising from:
+  </p>
+  <ul>
+    <li>Your violation of these Terms</li>
+    <li>Your use of the app in a prohibited manner</li>
+    <li>Any false SOS alerts you knowingly trigger</li>
+    <li>Your violation of any third party's rights</li>
+  </ul>
+
+  <h2 id="termination">13. Termination</h2>
+  <p>
+    These Terms remain in effect while you use the app. You may terminate the agreement at any
+    time by uninstalling the app and wiping your data (Settings → Wipe all data).
+  </p>
+  <p>
+    We reserve the right to discontinue the app or release updates that change functionality.
+    As an open-source project, you may fork the repository to maintain your own version if we
+    do so.
+  </p>
+
+  <h2 id="governing-law">14. Governing law</h2>
+  <p>
+    These Terms shall be governed by and construed in accordance with the laws of India,
+    without regard to its conflict of law provisions. Any disputes arising under these Terms
+    shall be subject to the exclusive jurisdiction of the courts located in India.
+  </p>
+  <p>
+    If you are using the app in a jurisdiction with mandatory consumer protection laws that
+    provide greater rights than those above, those mandatory rights are not affected by these Terms.
+  </p>
+
+  <h2 id="changes">15. Changes to these terms</h2>
+  <p>
+    We may update these Terms from time to time. Updated Terms will be posted on this page with
+    a revised "Last updated" date. For material changes, we will display an in-app notice on
+    the next launch.
+  </p>
+  <p>
+    Continued use of the app after changes become effective constitutes acceptance of the new Terms.
+    If you do not agree to the revised Terms, stop using the app and uninstall it.
+  </p>
+
+  <h2 id="contact">16. Contact</h2>
+  <div class="contact-card">
+    <h3>Questions about these terms?</h3>
+    <p>If you have questions about these Terms and Conditions, please contact:</p>
+    <p>
+      <strong>GuardianCircle</strong><br/>
+      Email: <a href="mailto:legal@guardiancircle.app">legal@guardiancircle.app</a><br/>
+      GitHub Issues: <a href="https://github.com/amitgaikwad2837/GuardianCircle/issues" target="_blank" rel="noopener">github.com/amitgaikwad2837/GuardianCircle/issues</a>
+    </p>
+    <p style="margin-bottom:0; font-size:13px; color: var(--text3);">
+      We aim to respond to all legal enquiries within 14 business days.
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 GuardianCircle · MIT License</p>
+  <p style="margin-top:10px;">
+    <a href="index.html">Home</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+  </p>
+</footer>
+
+</body>
+</html>

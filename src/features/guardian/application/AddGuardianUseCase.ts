@@ -6,10 +6,11 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export interface AddGuardianInput {
   displayName: string;
-  phoneNumber: string;         // raw — will be normalised to E.164
+  phoneNumber: string;          // raw — will be normalised to E.164
   notificationPriority?: number;
   isDecoy?: boolean;
-  publicKey?: string;
+  signingPublicKey?: string;    // ECDSA key — used for FCM signature verification
+  encryptionPublicKey?: string; // ECDH key  — used to encrypt FCM payloads for this guardian
   fcmToken?: string;
 }
 
@@ -32,14 +33,18 @@ export class AddGuardianUseCase {
       throw new Error('Maximum of 10 guardians reached.');
     }
 
+    // Trust level 2 requires both keys (signing + encryption) to be present
+    const isVerified = Boolean(input.signingPublicKey && input.encryptionPublicKey);
+
     const guardian = await this.repo.create({
       displayName: input.displayName.trim(),
       phoneNumber: phone.format('E.164'),
-      trustLevel: input.publicKey ? 2 : 1,
+      trustLevel: isVerified ? 2 : 1,
       notificationPriority: input.notificationPriority ?? count + 1,
       isActive: true,
       isDecoy: input.isDecoy ?? false,
-      publicKey: input.publicKey,
+      signingPublicKey: input.signingPublicKey,
+      encryptionPublicKey: input.encryptionPublicKey,
       fcmToken: input.fcmToken,
       addedAt: new Date(),
     });

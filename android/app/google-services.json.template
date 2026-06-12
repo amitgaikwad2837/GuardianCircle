@@ -1,0 +1,37 @@
+{
+  "_INSTRUCTIONS": [
+    "This is a TEMPLATE — not a real google-services.json.",
+    "To enable Firebase Cloud Messaging (push notifications):",
+    "  1. Go to https://console.firebase.google.com",
+    "  2. Create a project named 'GuardianCircle' (or use existing)",
+    "  3. Add an Android app with package name: com.guardiancircle.app",
+    "  4. Download the real google-services.json",
+    "  5. Replace this file with the real one (rename to google-services.json)",
+    "  6. Add google-services.json to .gitignore — it contains API keys",
+    "",
+    "The app works fully offline without Firebase.",
+    "Push notifications are an enhancement only — SMS is always the primary channel."
+  ],
+  "project_info": {
+    "project_number": "REPLACE_WITH_PROJECT_NUMBER",
+    "project_id": "guardiancircle-REPLACE",
+    "storage_bucket": "guardiancircle-REPLACE.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:REPLACE:android:REPLACE",
+        "android_client_info": {
+          "package_name": "com.guardiancircle.app"
+        }
+      },
+      "api_key": [{ "current_key": "REPLACE_WITH_API_KEY" }],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

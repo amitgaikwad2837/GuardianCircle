@@ -1,4 +1,9 @@
+import { NativeModules } from 'react-native';
 import { KeyManager, type EncryptResult } from './KeyManager';
+
+const Crypto = NativeModules.CryptoModule as {
+  encryptForRecipient(plaintext: string, recipientPublicKey: string): Promise<string>;
+};
 
 /**
  * AES-256-GCM encryption for evidence files and sensitive payloads.
@@ -17,16 +22,13 @@ export class EncryptionService {
   }
 
   /**
-   * Encrypt a guardian notification payload for delivery via FCM relay.
-   * Uses recipient's Ed25519 public key for key agreement.
+   * Encrypts a payload for delivery via the FCM relay.
+   * Uses ECDH + AES-256-GCM via the native CryptoModule.
+   * The recipient decrypts using their private key.
+   *
+   * Output format: `ephemeral_pubkey_b64|iv_b64|ciphertext_b64`
    */
   static async encryptForRecipient(plaintext: string, recipientPublicKey: string): Promise<string> {
-    // X25519 ECDH key agreement → AES-256-GCM
-    // Implemented in native CryptoModule
-    const { NativeModules } = require('react-native');
-    return NativeModules.CryptoModule.encryptForRecipient(
-      plaintext,
-      recipientPublicKey,
-    ) as Promise<string>;
+    return Crypto.encryptForRecipient(plaintext, recipientPublicKey);
   }
 }

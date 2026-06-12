@@ -32,6 +32,8 @@ export const PREF_KEYS = {
   ACTIVE_INCIDENT_ID: 'active_incident_id',
 
   USER_DISPLAY_NAME: 'user_display_name',
+
+  RELAY_ENDPOINT: 'relay_endpoint',
 } as const;
 
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];

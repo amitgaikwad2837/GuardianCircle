@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Production network security policy.
+  - Only HTTPS allowed in release (cleartext disabled).
+  - Debug builds allow cleartext via the debug AndroidManifest override.
+  - Certificate pinning is NOT used here because:
+      (a) FCM and AI providers (OpenAI/Anthropic/Gemini) rotate certificates.
+      (b) The app communicates directly with provider APIs — no GuardianCircle backend.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

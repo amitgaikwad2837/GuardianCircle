@@ -56,6 +56,19 @@ export default function PermissionsScreen(): React.JSX.Element {
           GuardianCircle needs these to protect you. You can change them any time in Settings.
         </Text>
 
+        {/* Play Store Personal Safety policy: fall/crash detection disclaimer must appear during onboarding */}
+        <View style={styles.disclosureCard}>
+          <Text style={styles.disclosureTitle}>Safety Detection Features</Text>
+          <Text style={styles.disclosureBody}>
+            GuardianCircle includes fall detection and vehicle crash detection using your
+            phone&apos;s accelerometer and gyroscope. These features may not detect all falls or
+            crashes, and may produce false alerts. They are a safety assistance tool only and do
+            not replace emergency services or professional medical advice.{'\n\n'}
+            When a possible fall or crash is detected, a countdown screen appears giving you time
+            to cancel before an SOS is sent to your guardians.
+          </Text>
+        </View>
+
         <Text style={styles.sectionLabel}>Required</Text>
         {REQUIRED_PERMISSIONS.map((p) => (
           <View key={p.key} style={styles.permRow} accessibilityRole="text">
@@ -107,4 +120,14 @@ const styles = StyleSheet.create({
   permLabel: { ...typography.titleMedium, color: colors.light.onBackground },
   permReason: { ...typography.bodyMedium, color: colors.light.onSurfaceVariant },
   cta: { marginTop: spacing.xl, width: '100%' },
+  disclosureCard: {
+    backgroundColor: colors.light.surface,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.sosRed,
+  },
+  disclosureTitle: { ...typography.titleSmall, color: colors.light.onBackground, marginBottom: spacing.xs },
+  disclosureBody: { ...typography.bodySmall, color: colors.light.onSurfaceVariant, lineHeight: 18 },
 });

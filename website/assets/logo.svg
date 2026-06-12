@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- Outer shield — indigo -->
+  <path d="M100 8 C89 8 38 26 38 74 C38 122 64 158 100 172 C136 158 162 122 162 74 C162 26 111 8 100 8 Z" fill="#1A237E"/>
+  <path d="M100 8 C111 8 162 26 162 74 C162 122 136 158 100 172 L100 8 Z" fill="#3F51B5" opacity="0.5"/>
+  <path d="M81 16 Q100 8 119 16" stroke="#9FA8DA" stroke-width="1.5" stroke-linecap="round" opacity="0.45"/>
+
+  <!-- Inner shield — forest green -->
+  <path d="M100 34 C92 34 56 48 56 84 C56 114 76 138 100 150 C124 138 144 114 144 84 C144 48 108 34 100 34 Z" fill="#1B5E20"/>
+  <path d="M100 34 C108 34 144 48 144 84 C144 114 124 138 100 150 L100 34 Z" fill="#2E7D32" opacity="0.55"/>
+  <path d="M100 34 C92 34 56 48 56 84 C56 114 76 138 100 150 C124 138 144 114 144 84 C144 48 108 34 100 34 Z" stroke="#66BB6A" stroke-width="0.8" opacity="0.35"/>
+
+  <!-- Padlock shackle -->
+  <path d="M88 90 L88 82 C88 70 112 70 112 82 L112 90" stroke="white" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Padlock body -->
+  <rect x="82" y="90" width="36" height="26" rx="5" fill="white"/>
+
+  <!-- Keyhole -->
+  <circle cx="100" cy="101" r="5.5" fill="#1B5E20"/>
+  <rect x="97" y="101" width="6" height="9" rx="2" fill="#1B5E20"/>
+</svg>

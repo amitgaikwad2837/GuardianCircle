@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GuardianCircle</string>
+
+    <!-- Notification channel names — shown in Android Settings > Notifications -->
+    <string name="channel_alerts_name">Emergency Guardian Alerts</string>
+    <string name="channel_alerts_description">Received when your guardians trigger an SOS</string>
+
+    <string name="channel_updates_name">Guardian Updates</string>
+    <string name="channel_updates_description">Check-in and journey status updates from guardians</string>
+
+    <string name="channel_monitoring_name">Safety Monitoring</string>
+    <string name="channel_monitoring_description">Active while journey or distress monitoring is running</string>
+
+    <!-- Foreground service notification -->
+    <string name="monitoring_notification_title">GuardianCircle is monitoring</string>
+    <string name="monitoring_notification_text">Journey monitoring active. Tap to open app.</string>
+
+    <!-- FileProvider authority -->
+    <string name="file_provider_authority" translatable="false">com.guardiancircle.app.fileprovider</string>
+</resources>

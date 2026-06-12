@@ -30,20 +30,19 @@
     "@tanstack/react-query": "^5.56.2",
 
     "@op-engineering/op-sqlite": "^8.0.2",
-    "react-native-mmkv": "^3.1.0",
+    "react-native-mmkv": "2.12.2",
     "react-native-keychain": "^8.2.0",
 
     "react-native-permissions": "^4.1.5",
     "react-native-geolocation-service": "^5.3.1",
     "@react-native-firebase/app": "^20.5.0",
     "@react-native-firebase/messaging": "^20.5.0",
-    "notifee": "^9.1.4",
+    "@notifee/react-native": "^9.1.4",
 
-    "react-native-camera": "^4.2.1",
-    "react-native-reanimated": "^3.15.1",
-    "react-native-gesture-handler": "^2.19.0",
-    "react-native-safe-area-context": "^4.11.0",
-    "react-native-screens": "^3.34.0",
+    "react-native-reanimated": "3.16.7",
+    "react-native-gesture-handler": "2.20.2",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "3.34.0",
     "react-native-svg": "^15.6.0",
     "react-native-haptic-feedback": "^2.3.1",
     "react-native-background-timer": "^2.4.1",
@@ -70,25 +69,34 @@
 
     "typescript": "5.0.4",
     "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "prettier": "^3.3.3",
 
     "jest": "^29.7.0",
     "babel-jest": "^29.7.0",
+    "react-test-renderer": "18.3.1",
     "@testing-library/react-native": "^12.6.1",
     "@testing-library/jest-native": "^5.4.3",
     "jest-environment-node": "^29.7.0",
 
     "detox": "^20.26.2",
-    "patch-package": "^8.0.0"
+    "patch-package": "^8.0.0",
+    "babel-plugin-module-resolver": "^5.0.2"
   },
   "jest": {
     "preset": "react-native",
-    "setupFilesAfterFramework": [
-      "@testing-library/jest-native/extend-expect"
-    ],
+    "setupFilesAfterFramework": ["<rootDir>/jest.setup.ts"],
+    "moduleNameMapper": {
+      "^@core/(.*)$": "<rootDir>/src/core/$1",
+      "^@features/(.*)$": "<rootDir>/src/features/$1",
+      "^@shared/(.*)$": "<rootDir>/src/shared/$1",
+      "^@app/(.*)$": "<rootDir>/src/app/$1",
+      "^@assets/(.*)$": "<rootDir>/src/assets/$1"
+    },
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
     "transformIgnorePatterns": [
-      "node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-mmkv|react-native-keychain|react-native-permissions|react-native-haptic-feedback|notifee)/)"
+      "node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-mmkv|react-native-keychain|react-native-permissions|react-native-haptic-feedback|@notifee)/)"
     ],
     "coverageThreshold": {
       "global": {

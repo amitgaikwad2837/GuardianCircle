@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,8 +23,26 @@ export default function WelcomeScreen(): React.JSX.Element {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.hero}>
-          <Text style={styles.logo} accessibilityRole="header">
-            GuardianCircle
+          <Svg
+            width={120}
+            height={144}
+            viewBox="0 0 200 240"
+            accessibilityLabel="GuardianCircle logo"
+            accessibilityRole="image"
+          >
+            <Path d="M100 8C89 8 38 26 38 74C38 122 64 158 100 172C136 158 162 122 162 74C162 26 111 8 100 8Z" fill="#1A237E"/>
+            <Path d="M100 8C111 8 162 26 162 74C162 122 136 158 100 172L100 8Z" fill="#3F51B5" opacity="0.5"/>
+            <Path d="M81 16Q100 8 119 16" fill="none" stroke="#9FA8DA" strokeWidth="1.5" strokeLinecap="round"/>
+            <Path d="M100 34C92 34 56 48 56 84C56 114 76 138 100 150C124 138 144 114 144 84C144 48 108 34 100 34Z" fill="#1B5E20"/>
+            <Path d="M100 34C108 34 144 48 144 84C144 114 124 138 100 150L100 34Z" fill="#2E7D32" opacity="0.55"/>
+            <Path d="M88 90L88 82C88 70 112 70 112 82L112 90" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"/>
+            <Rect x="82" y="90" width="36" height="26" rx="5" fill="#fff"/>
+            <Circle cx="100" cy="101" r="5.5" fill="#1B5E20"/>
+            <Rect x="97" y="101" width="6" height="9" rx="2" fill="#1B5E20"/>
+          </Svg>
+          <Text style={styles.appName} accessibilityRole="header">
+            <Text style={styles.appNameIndigo}>Guardian</Text>
+            <Text style={styles.appNameGreen}>Circle</Text>
           </Text>
           <Text style={styles.tagline}>Your safety, your control.</Text>
         </View>
@@ -67,7 +86,10 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.light.background },
   container: { flexGrow: 1, padding: spacing.xl, justifyContent: 'space-between' },
   hero: { alignItems: 'center', paddingTop: spacing.xxl },
-  logo: { ...typography.displayLarge, color: colors.sosRed, marginBottom: spacing.sm },
+  logo: { marginBottom: spacing.lg },
+  appName: { ...typography.displayLarge, marginBottom: spacing.sm },
+  appNameIndigo: { color: '#1A237E' },
+  appNameGreen: { color: '#1B5E20' },
   tagline: { ...typography.headlineMedium, color: colors.light.onSurfaceVariant, textAlign: 'center' },
   bullets: { gap: spacing.lg, paddingVertical: spacing.xl },
   bullet: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

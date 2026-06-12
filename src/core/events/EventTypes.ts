@@ -47,6 +47,11 @@ export type AppEvents = {
   'fall:confirmed': { eventId: string };
   'fall:dismissed': { eventId: string };
 
+  // ─── Vehicle crash ─────────────────────────────────
+  'crash:detected': { eventId: string; confidence: number; impactMagnitude: number };
+  'crash:confirmed': { eventId: string };
+  'crash:dismissed': { eventId: string };
+
   // ─── Journey ───────────────────────────────────────
   'journey:started': { journeyId: string };
   'journey:deviated': { journeyId: string; deviationMeters: number; location: Coordinates };
