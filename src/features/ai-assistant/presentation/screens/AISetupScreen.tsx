@@ -11,6 +11,11 @@ import { useTheme } from '@core/theme/ThemeProvider';
 import { AIProviderFactory } from '../../application/AIProviderFactory';
 import type { AIProviderType, IAIProvider } from '../../domain/interfaces/IAIProvider';
 import type { SettingsStackParams } from '@core/navigation/NavigationTypes';
+import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
+
+const DEFAULT_SYSTEM_PROMPT =
+  'You are a helpful assistant. Answer the user\'s questions clearly and concisely. ' +
+  'Respect privacy and do not encourage harmful activities.';
 
 type Nav = NativeStackNavigationProp<SettingsStackParams>;
 
@@ -61,12 +66,37 @@ export default function AISetupScreen(): React.JSX.Element {
   });
   const [busy, setBusy] = useState<AIProviderType | null>(null);
 
+  // Custom assistant persona
+  const [assistantName, setAssistantName]     = useState('');
+  const [assistantPrompt, setAssistantPrompt] = useState('');
+  const [personaSaved, setPersonaSaved]       = useState(false);
+
   const loadConfigured = useCallback(async () => {
     const results = await Promise.all(PROVIDERS.map((p) => p.instance.isConfigured()));
     setConfigured({ openai: results[0]!, anthropic: results[1]!, gemini: results[2]! });
   }, []);
 
-  useEffect(() => { void loadConfigured(); }, [loadConfigured]);
+  useEffect(() => {
+    void loadConfigured();
+    setAssistantName(PreferencesStore.getString(PREF_KEYS.AI_ASSISTANT_NAME) ?? '');
+    setAssistantPrompt(PreferencesStore.getString(PREF_KEYS.AI_ASSISTANT_SYSTEM_PROMPT) ?? '');
+  }, [loadConfigured]);
+
+  const handleSavePersona = (): void => {
+    const name   = assistantName.trim();
+    const prompt = assistantPrompt.trim();
+    PreferencesStore.setString(PREF_KEYS.AI_ASSISTANT_NAME, name || 'Assistant');
+    PreferencesStore.setString(PREF_KEYS.AI_ASSISTANT_SYSTEM_PROMPT, prompt || DEFAULT_SYSTEM_PROMPT);
+    setPersonaSaved(true);
+    setTimeout(() => setPersonaSaved(false), 2000);
+  };
+
+  const handleClearPersona = (): void => {
+    PreferencesStore.delete(PREF_KEYS.AI_ASSISTANT_NAME);
+    PreferencesStore.delete(PREF_KEYS.AI_ASSISTANT_SYSTEM_PROMPT);
+    setAssistantName('');
+    setAssistantPrompt('');
+  };
 
   const handleSave = async (provider: ProviderConfig): Promise<void> => {
     const key = apiKeys[provider.type].trim();
@@ -125,6 +155,62 @@ export default function AISetupScreen(): React.JSX.Element {
           Bring Your Own Key (BYOK). Your API key is stored locally in Android Keystore.
           GuardianCircle never sees it. Requests go directly from your device to the provider.
         </Text>
+
+        {/* ── Custom assistant persona ─────────────────────────────── */}
+        <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.providerName, { color: theme.colors.onSurface, marginBottom: 4 }]}>
+            Assistant persona
+          </Text>
+          <Text style={[styles.helpText, { color: theme.colors.onSurfaceVariant }]}>
+            Give your assistant a name and a custom role — e.g. "Yoga Coach" with a prompt that explains its specialty.
+            Leave blank to use the default general-purpose assistant.
+          </Text>
+
+          <Text style={[styles.fieldLabel, { color: theme.colors.onSurfaceVariant }]}>Name</Text>
+          <TextInput
+            style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.background }]}
+            placeholder="e.g. Yoga Coach"
+            placeholderTextColor={theme.colors.onSurfaceVariant}
+            value={assistantName}
+            onChangeText={setAssistantName}
+            maxLength={40}
+            accessibilityLabel="Assistant name"
+          />
+
+          <Text style={[styles.fieldLabel, { color: theme.colors.onSurfaceVariant }]}>System prompt</Text>
+          <TextInput
+            style={[styles.input, styles.promptInput, { borderColor: theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.background }]}
+            placeholder={`e.g. You are a friendly yoga instructor. Help beginners learn poses, breathing, and routines. Keep advice safe and suitable for all fitness levels.`}
+            placeholderTextColor={theme.colors.onSurfaceVariant}
+            value={assistantPrompt}
+            onChangeText={setAssistantPrompt}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            accessibilityLabel="System prompt"
+          />
+
+          <View style={styles.cardActions}>
+            <TouchableOpacity
+              style={[styles.saveBtn, { backgroundColor: personaSaved ? '#4CAF50' : theme.colors.primary }]}
+              onPress={handleSavePersona}
+              accessibilityRole="button"
+              accessibilityLabel="Save assistant persona"
+            >
+              <Text style={styles.saveBtnText}>{personaSaved ? 'Saved ✓' : 'Save persona'}</Text>
+            </TouchableOpacity>
+            {(assistantName || assistantPrompt) && (
+              <TouchableOpacity
+                style={[styles.clearBtn, { borderColor: theme.colors.danger }]}
+                onPress={handleClearPersona}
+                accessibilityRole="button"
+                accessibilityLabel="Reset to default"
+              >
+                <Text style={[styles.clearBtnText, { color: theme.colors.danger }]}>Reset</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
         {PROVIDERS.map((provider) => (
           <View key={provider.type} style={[styles.card, { backgroundColor: theme.colors.surface }]}>
@@ -204,10 +290,14 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
     badge: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
     badgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
     helpText: { fontSize: 13, lineHeight: 18, marginBottom: 12 },
+    fieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4, marginTop: 8 },
     input: {
       borderWidth: 1, borderRadius: theme.radius.md,
       paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
       fontSize: 14, fontFamily: 'monospace', marginBottom: 12,
+    },
+    promptInput: {
+      fontFamily: undefined, fontSize: 13, minHeight: 96,
     },
     cardActions: { flexDirection: 'row', gap: 8 },
     saveBtn: { flex: 1, borderRadius: theme.radius.md, paddingVertical: 10, alignItems: 'center' },

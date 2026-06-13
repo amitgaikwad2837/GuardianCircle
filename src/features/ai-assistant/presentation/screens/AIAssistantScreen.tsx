@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TextInput,
   TouchableOpacity, KeyboardAvoidingView, ActivityIndicator, Platform,
@@ -11,10 +11,15 @@ import { useTheme } from '@core/theme/ThemeProvider';
 import { AIProviderFactory } from '../../application/AIProviderFactory';
 import type { ChatMessage } from '../../domain/interfaces/IAIProvider';
 import type { SettingsStackParams } from '@core/navigation/NavigationTypes';
+import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 
 type Nav = NativeStackNavigationProp<SettingsStackParams>;
 
-const SYSTEM_PROMPT = 'You are a personal safety assistant integrated into GuardianCircle, a privacy-first safety app. Help users with safety planning, understanding their app features, and general well-being advice. Never encourage illegal activities. If the user indicates they are in immediate danger, remind them to press the SOS button.';
+// Fallback used only when the user has not configured a custom prompt.
+// Deliberately generic so it does not frame every topic through a safety lens.
+const DEFAULT_SYSTEM_PROMPT =
+  'You are a helpful assistant. Answer the user\'s questions clearly and concisely. ' +
+  'Respect privacy and do not encourage harmful activities.';
 
 interface Message extends ChatMessage {
   id: string;
@@ -31,6 +36,15 @@ export default function AIAssistantScreen(): React.JSX.Element {
   const [input, setInput]       = useState('');
   const [isBusy, setIsBusy]     = useState(false);
   const [noProvider, setNoProvider] = useState(false);
+  const [assistantName, setAssistantName] = useState('Assistant');
+  const [systemPrompt, setSystemPrompt]   = useState(DEFAULT_SYSTEM_PROMPT);
+
+  useEffect(() => {
+    const name   = PreferencesStore.getString(PREF_KEYS.AI_ASSISTANT_NAME);
+    const prompt = PreferencesStore.getString(PREF_KEYS.AI_ASSISTANT_SYSTEM_PROMPT);
+    if (name)   { setAssistantName(name); }
+    if (prompt) { setSystemPrompt(prompt); }
+  }, []);
 
   const handleSend = async (): Promise<void> => {
     const text = input.trim();
@@ -56,7 +70,7 @@ export default function AIAssistantScreen(): React.JSX.Element {
       const history: ChatMessage[] = messages.map(({ role, content }) => ({ role, content }));
       history.push({ role: 'user', content: text });
 
-      const response = await provider.chat(history, { systemPrompt: SYSTEM_PROMPT, maxTokens: 600 });
+      const response = await provider.chat(history, { systemPrompt, maxTokens: 600 });
 
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -88,7 +102,7 @@ export default function AIAssistantScreen(): React.JSX.Element {
         >
           <Text style={[styles.back, { color: theme.colors.primary }]}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.colors.onBackground }]}>AI Assistant</Text>
+        <Text style={[styles.title, { color: theme.colors.onBackground }]}>{assistantName}</Text>
         <TouchableOpacity
           onPress={() => nav.navigate('AIAssistant')}
           accessibilityRole="button"
@@ -120,10 +134,10 @@ export default function AIAssistantScreen(): React.JSX.Element {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
-              Safety Assistant
+              {assistantName}
             </Text>
             <Text style={[styles.emptyBody, { color: theme.colors.onSurfaceVariant }]}>
-              Ask me about safety planning, app features, or general advice. Your conversation stays on your device.
+              Your conversation stays on your device. Configure this assistant in Setup.
             </Text>
           </View>
         }

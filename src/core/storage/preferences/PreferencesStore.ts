@@ -35,8 +35,11 @@ export const PREF_KEYS = {
 
   RELAY_ENDPOINT: 'relay_endpoint',
 
-  MESH_RELAY_ENROLLED: 'mesh_relay_enrolled',     // user opted in to relay nearby SOS beacons
-  MESH_ENROLLMENT_PROMPTED: 'mesh_enroll_prompted', // enrollment dialog shown at least once
+  MESH_RELAY_ENROLLED: 'mesh_relay_enrolled',
+  MESH_ENROLLMENT_PROMPTED: 'mesh_enroll_prompted',
+
+  AI_ASSISTANT_NAME: 'ai_assistant_name',
+  AI_ASSISTANT_SYSTEM_PROMPT: 'ai_assistant_system_prompt',
 
   PIN_FAILED_ATTEMPTS: 'gc_pin_failed_attempts',
   PIN_LOCKED_UNTIL: 'gc_pin_locked_until',
