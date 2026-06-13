@@ -7,12 +7,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import QRCode from 'react-native-qrcode-svg';
-import {
-  Camera,
-  useCameraDevice,
-  useCameraPermission,
-  useCodeScanner,
-} from 'react-native-vision-camera';
+import { Camera, CameraType } from 'react-native-camera-kit';
 
 import { useTheme } from '@core/theme/ThemeProvider';
 import { IdentityManager } from '@core/crypto/IdentityManager';
@@ -25,7 +20,6 @@ import type { GuardianStackParams } from '@core/navigation/NavigationTypes';
 type Nav   = NativeStackNavigationProp<GuardianStackParams, 'QRPair'>;
 type Route = RouteProp<GuardianStackParams, 'QRPair'>;
 
-/** QR payload exchanged between two GuardianCircle devices */
 interface QRPayload {
   publicKey: string;
   encryptionPublicKey: string;
@@ -47,7 +41,7 @@ async function keyFingerprint(base64Key: string): Promise<string | null> {
   }
 }
 
-const SCREEN_SIZE = Dimensions.get('window').width * 0.72;
+const SCREEN_W = Dimensions.get('window').width;
 
 export default function QRPairScreen(): React.JSX.Element {
   const theme  = useTheme();
@@ -56,16 +50,13 @@ export default function QRPairScreen(): React.JSX.Element {
   const route  = useRoute<Route>();
   const { mode, prefillName, prefillPhone } = route.params;
 
-  // ── Show-mode state ────────────────────────────────────────────────────────
   const [myQRData, setMyQRData]   = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ── Scan-mode state ────────────────────────────────────────────────────────
-  const handledRef = useRef(false);   // prevent double-handling a single scan
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('back');
+  // Prevent double-handling a single scan
+  const handledRef = useRef(false);
 
-  // ── Load own QR data ───────────────────────────────────────────────────────
+  // ── Load own QR (show mode) ───────────────────────────────────────────────
   const loadMyQR = useCallback((): void => {
     setIsLoading(true);
     try {
@@ -91,13 +82,6 @@ export default function QRPairScreen(): React.JSX.Element {
   useEffect(() => {
     if (mode === 'show') { loadMyQR(); }
   }, [mode, loadMyQR]);
-
-  // ── Request camera permission for scan mode ────────────────────────────────
-  useEffect(() => {
-    if (mode === 'scan' && !hasPermission) {
-      void requestPermission();
-    }
-  }, [mode, hasPermission, requestPermission]);
 
   // ── Handle scanned QR ─────────────────────────────────────────────────────
   const handleScanned = useCallback(async (rawData: string): Promise<void> => {
@@ -162,15 +146,6 @@ export default function QRPairScreen(): React.JSX.Element {
     }
   }, [nav, prefillName, prefillPhone]);
 
-  // ── Vision Camera code scanner ────────────────────────────────────────────
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
-    onCodeScanned: (codes) => {
-      const value = codes[0]?.value;
-      if (value) { void handleScanned(value); }
-    },
-  });
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -199,17 +174,17 @@ export default function QRPairScreen(): React.JSX.Element {
             {isLoading ? (
               <ActivityIndicator color={theme.colors.primary} size="large" />
             ) : myQRData ? (
-              <View style={[styles.qrBox, { backgroundColor: '#FFFFFF' }]}>
+              <View style={styles.qrBox}>
                 <QRCode
                   value={myQRData}
-                  size={SCREEN_SIZE}
+                  size={SCREEN_W * 0.72}
                   color="#000000"
                   backgroundColor="#FFFFFF"
                 />
               </View>
             ) : null}
 
-            <Text style={[styles.levelNote, { color: theme.colors.onSurfaceVariant }]}>
+            <Text style={[styles.note, { color: theme.colors.onSurfaceVariant }]}>
               After scanning, both you and your guardian will be upgraded to{' '}
               <Text style={{ fontWeight: '700' }}>Verified (Level 2)</Text>, enabling
               end-to-end encrypted push notifications.
@@ -221,43 +196,22 @@ export default function QRPairScreen(): React.JSX.Element {
               Point your camera at your guardian&apos;s QR code.
             </Text>
 
-            {!hasPermission ? (
-              <View style={[styles.cameraBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Text style={[styles.cameraMsg, { color: theme.colors.onSurfaceVariant }]}>
-                  Camera permission is required to scan QR codes.
-                </Text>
-                <TouchableOpacity
-                  style={[styles.permBtn, { backgroundColor: theme.colors.primary }]}
-                  onPress={() => { void requestPermission(); }}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.permBtnText}>Grant Camera Access</Text>
-                </TouchableOpacity>
-              </View>
-            ) : !device ? (
-              <View style={[styles.cameraBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Text style={[styles.cameraMsg, { color: theme.colors.onSurfaceVariant }]}>
-                  No back camera found on this device.
-                </Text>
-              </View>
-            ) : (
-              <View style={[styles.cameraBox, { overflow: 'hidden', borderRadius: theme.radius.lg }]}>
-                <Camera
-                  style={StyleSheet.absoluteFill}
-                  device={device}
-                  isActive={true}
-                  codeScanner={codeScanner}
-                />
-                {/* Corner markers */}
-                <View style={styles.cornerTL} />
-                <View style={styles.cornerTR} />
-                <View style={styles.cornerBL} />
-                <View style={styles.cornerBR} />
-              </View>
-            )}
+            <View style={styles.cameraBox}>
+              <Camera
+                style={StyleSheet.absoluteFill}
+                cameraType={CameraType.Back}
+                scanBarcode
+                onReadCode={(event: { nativeEvent: { codeStringValue: string } }) => {
+                  void handleScanned(event.nativeEvent.codeStringValue);
+                }}
+                showFrame
+                laserColor={theme.colors.primary}
+                frameColor="#FFFFFF"
+              />
+            </View>
 
-            <Text style={[styles.levelNote, { color: theme.colors.onSurfaceVariant }]}>
-              Make sure the QR code is well-lit and fits inside the viewfinder.
+            <Text style={[styles.note, { color: theme.colors.onSurfaceVariant }]}>
+              Make sure the QR code is well-lit and fits inside the frame.
             </Text>
           </>
         )}
@@ -265,10 +219,6 @@ export default function QRPairScreen(): React.JSX.Element {
     </SafeAreaView>
   );
 }
-
-const CAMERA_SIZE = Dimensions.get('window').width * 0.82;
-const CORNER = 20;
-const CORNER_THICKNESS = 3;
 
 function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
@@ -286,48 +236,15 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
     qrBox: {
       padding: 16,
       borderRadius: theme.radius.lg,
+      backgroundColor: '#FFFFFF',
       elevation: 2,
     },
     cameraBox: {
-      width: CAMERA_SIZE,
-      height: CAMERA_SIZE,
+      width: SCREEN_W * 0.88,
+      height: SCREEN_W * 0.88,
       borderRadius: theme.radius.lg,
-      borderWidth: 1.5,
-      alignItems: 'center',
-      justifyContent: 'center',
+      overflow: 'hidden',
     },
-    cameraMsg: { fontSize: 14, textAlign: 'center', paddingHorizontal: 24, marginBottom: 16 },
-    permBtn: {
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: theme.radius.md,
-    },
-    permBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
-    levelNote: { fontSize: 13, textAlign: 'center', lineHeight: 20, paddingHorizontal: theme.spacing.lg },
-    // corner bracket markers overlay on camera view
-    cornerTL: {
-      position: 'absolute', top: 16, left: 16,
-      width: CORNER, height: CORNER,
-      borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: '#FFFFFF',
-      borderTopLeftRadius: 4,
-    },
-    cornerTR: {
-      position: 'absolute', top: 16, right: 16,
-      width: CORNER, height: CORNER,
-      borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: '#FFFFFF',
-      borderTopRightRadius: 4,
-    },
-    cornerBL: {
-      position: 'absolute', bottom: 16, left: 16,
-      width: CORNER, height: CORNER,
-      borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderColor: '#FFFFFF',
-      borderBottomLeftRadius: 4,
-    },
-    cornerBR: {
-      position: 'absolute', bottom: 16, right: 16,
-      width: CORNER, height: CORNER,
-      borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderColor: '#FFFFFF',
-      borderBottomRightRadius: 4,
-    },
+    note: { fontSize: 13, textAlign: 'center', lineHeight: 20, paddingHorizontal: theme.spacing.lg },
   });
 }
