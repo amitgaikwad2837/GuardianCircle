@@ -60,6 +60,23 @@ Layer 4: User prompted to disable battery optimisation (Doze exemption)
 Layer 5: WorkManager FOREGROUND priority for guaranteed execution
 ```
 
+## Feature Slices (v1.0)
+
+| Slice | Key use cases |
+|---|---|
+| `sos` | TriggerSOSUseCase, EscalateAlertUseCase, AlertDispatcher |
+| `guardian` | AddGuardianUseCase, QR pairing, GuardianNotificationHandler |
+| `journey` | StartJourneyUseCase, DeviationCheckUseCase, JourneyNotificationService |
+| `checkin` | CompleteCheckInUseCase, MissedCheckInUseCase (recurring) |
+| `fall-detection` | FallDetectionUseCase, SensorPipeline, SensitivityConfig |
+| `vehicle-crash` | VehicleCrashDetectionUseCase (speed + G-force FSM) |
+| `distress` | ConfidenceScoringUseCase, SensorPipeline |
+| `geofence` | CreateGeofenceUseCase, UnsafePlaceService (re-entry alerts) |
+| `evidence` | EvidenceLogScreen (capture, export, 24h auto-delete) |
+| `security` | DuressPinService, DecoyModeScreen |
+| `settings` | SensitivityProfilesScreen, AppIconPickerScreen, WipeDataScreen |
+| `ai-assistant` | AIProviderFactory, OpenAI / Anthropic / Gemini providers (BYOK) |
+
 ## Module Map
 
 See [Module Breakdown](module-breakdown.md) for full dependency graph.
