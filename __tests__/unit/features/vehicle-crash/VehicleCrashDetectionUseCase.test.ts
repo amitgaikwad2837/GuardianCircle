@@ -9,6 +9,7 @@
  */
 
 import { EventBus } from '../../../../src/core/events/EventBus';
+import { VehicleCrashDetectionUseCase as _VehicleCrashDetectionUseCase } from '../../../../src/features/vehicle-crash/application/VehicleCrashDetectionUseCase';
 
 jest.mock('react-native', () => ({
   NativeEventEmitter: jest.fn().mockImplementation(() => ({
@@ -29,10 +30,8 @@ type AnyUseCase = any;
 describe('VehicleCrashDetectionUseCase', () => {
   let useCase: AnyUseCase;
 
-  beforeEach(async () => {
-    jest.resetModules();
-    const mod = await import('../../../../src/features/vehicle-crash/application/VehicleCrashDetectionUseCase');
-    useCase = mod.VehicleCrashDetectionUseCase;
+  beforeEach(() => {
+    useCase = _VehicleCrashDetectionUseCase;
     useCase.start();
   });
 
@@ -57,20 +56,20 @@ describe('VehicleCrashDetectionUseCase', () => {
     expect(useCase.phase).toBe('impact_detected');
   });
 
-  it('emits fall:detected when confidence exceeds threshold', () => {
+  it('emits crash:detected when confidence exceeds threshold', () => {
     const spy = jest.spyOn(EventBus, 'emit');
 
-    // Set up: moving at 20 m/s (72 km/h) with high impact
+    // Set up: moving at 20 m/s (72 km/h) with very high impact (8g)
     useCase.phase = 'moving';
     useCase.speedBeforeMs = 20;
-    useCase.impactMagnitude = 6.0;  // 3g above threshold
+    useCase.impactMagnitude = 8.0;  // 5g above threshold → impactScore=1.0
     useCase.postImpactSamples = Array.from({ length: 10 }, (_, i) => ({
       x: 0, y: 9.81, z: 0, timestamp: Date.now() + i * 100, // ~1g — still
     }));
 
     useCase.evaluatePostImpact();
 
-    expect(spy).toHaveBeenCalledWith('fall:detected', expect.objectContaining({
+    expect(spy).toHaveBeenCalledWith('crash:detected', expect.objectContaining({
       eventId: 'test-uuid',
       confidence: expect.any(Number),
     }));

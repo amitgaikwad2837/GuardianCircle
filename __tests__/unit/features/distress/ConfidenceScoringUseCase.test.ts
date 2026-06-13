@@ -22,9 +22,9 @@ describe('ConfidenceScoringUseCase', () => {
     expect(score).toBeCloseTo(0.70, 2);
   });
 
-  it('clamps result to 1.0 for high sensitivity with strong signals', () => {
+  it('clamps result to 1.0 for high sensitivity with strong signals', async () => {
     const { PreferencesStore } = await import('@core/storage/preferences/PreferencesStore');
-    jest.mocked(PreferencesStore.getString).mockReturnValue('high');
+    jest.mocked(PreferencesStore.getString).mockReturnValueOnce('high');
     const signals = [
       { type: 'motion_agitation' as const, value: 1.0, weight: 1.0, timestamp: Date.now() },
     ];
