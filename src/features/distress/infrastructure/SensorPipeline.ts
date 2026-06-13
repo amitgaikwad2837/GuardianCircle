@@ -34,7 +34,7 @@ class SensorPipelineClass {
     if (this.isRunning) {return;}
 
     this.emitter = new NativeEventEmitter(NativeModules.SensorModule as NativeModule);
-    (NativeModules.SensorModule as { startListening?: (rate: number) => void } | undefined)?.startListening(SAMPLE_RATE_HZ);
+    (NativeModules.SensorModule as { startListening?: (rate: number) => void } | undefined)?.startListening?.(SAMPLE_RATE_HZ);
     this.accelSub = this.emitter.addListener('GC_ACCELEROMETER_DATA', this.onSample);
     this.isRunning = true;
     Logger.info(TAG, 'Pipeline started');
@@ -43,7 +43,7 @@ class SensorPipelineClass {
   stop(): void {
     if (!this.isRunning) {return;}
     this.accelSub?.remove();
-    (NativeModules.SensorModule as { stopListening?: () => void } | undefined)?.stopListening();
+    (NativeModules.SensorModule as { stopListening?: () => void } | undefined)?.stopListening?.();
     this.window = [];
     this.isRunning = false;
     Logger.info(TAG, 'Pipeline stopped');

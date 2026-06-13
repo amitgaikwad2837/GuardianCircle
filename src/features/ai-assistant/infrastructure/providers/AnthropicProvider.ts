@@ -51,14 +51,18 @@ export class AnthropicProvider implements IAIProvider {
   }
 
   async validateKey(key: string): Promise<boolean> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => { controller.abort(); }, 8000);
     try {
       const response = await fetch('https://api.anthropic.com/v1/models', {
         headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        signal: (AbortSignal as { timeout: (ms: number) => AbortSignal }).timeout(8000),
+        signal: controller.signal,
       });
       return response.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

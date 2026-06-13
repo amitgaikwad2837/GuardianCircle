@@ -61,7 +61,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       const result = this.db.execute(
         'SELECT phone_number FROM guardians WHERE is_active = 1 AND is_decoy = 0',
       );
-      const phones = (result as { rows: { _array: Array<{ phone_number: string }> } }).rows._array
+      const phones = (result as unknown as { rows: { _array: Array<{ phone_number: string }> } }).rows._array
         .map((r) => r.phone_number);
       SOSFallback.setGuardianPhones(phones);
     } catch (err) {
@@ -73,14 +73,14 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     const result = this.db.execute(
       'SELECT * FROM guardians ORDER BY notification_priority ASC',
     );
-    return Promise.resolve((result as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
+    return Promise.resolve((result as unknown as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
   }
 
   getActiveGuardians(): Promise<Guardian[]> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE is_active = 1 AND is_decoy = 0 ORDER BY notification_priority ASC',
     );
-    return Promise.resolve((result as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
+    return Promise.resolve((result as unknown as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
   }
 
   getById(id: string): Promise<Guardian | null> {
@@ -88,7 +88,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE id = ? LIMIT 1',
       [id],
     );
-    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    const row = (result as unknown as { rows: { _array: GuardianRow[] } }).rows._array[0];
     return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
@@ -97,7 +97,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE signing_public_key = ? LIMIT 1',
       [signingPublicKey],
     );
-    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    const row = (result as unknown as { rows: { _array: GuardianRow[] } }).rows._array[0];
     return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
@@ -111,7 +111,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       'SELECT * FROM guardians WHERE phone_number = ? LIMIT 1',
       [phoneNumber],
     );
-    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    const row = (result as unknown as { rows: { _array: GuardianRow[] } }).rows._array[0];
     return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
@@ -202,7 +202,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     const result = this.db.execute(
       'SELECT COUNT(*) as cnt FROM guardians WHERE is_active = 1 AND is_decoy = 0',
     );
-    const rows = (result as { rows: { _array: [{ cnt: number }] } }).rows._array;
+    const rows = (result as unknown as { rows: { _array: [{ cnt: number }] } }).rows._array;
     return Promise.resolve(rows[0]?.cnt ?? 0);
   }
 

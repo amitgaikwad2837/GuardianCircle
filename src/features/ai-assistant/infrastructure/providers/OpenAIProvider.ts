@@ -12,14 +12,18 @@ export class OpenAIProvider implements IAIProvider {
   }
 
   async isAvailable(): Promise<boolean> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => { controller.abort(); }, 5000);
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${await this.getKey()}` },
-        signal: (AbortSignal as { timeout: (ms: number) => AbortSignal }).timeout(5000),
+        signal: controller.signal,
       });
       return response.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

@@ -42,7 +42,7 @@ export const DatabaseManager = {
   },
 
   async runMigrations(database: DB): Promise<void> {
-    const [{ user_version }] = (database.execute('PRAGMA user_version') as { rows: { _array: [{ user_version: number }] } }).rows._array;
+    const [{ user_version }] = (database.execute('PRAGMA user_version') as unknown as { rows: { _array: [{ user_version: number }] } }).rows._array;
     let version = user_version ?? 0;
 
     const migrations = await this.loadMigrations();
