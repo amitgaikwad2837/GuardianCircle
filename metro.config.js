@@ -17,7 +17,7 @@ const config = {
   },
   resolver: {
     // Ensure SQLite and crypto native modules resolve correctly
-    assetExts: [...defaultConfig.resolver.assetExts, 'db', 'sql'],
+    assetExts: [...defaultConfig.resolver.assetExts, 'db'],
     sourceExts: [...defaultConfig.resolver.sourceExts, 'mjs', 'cjs'],
   },
 };
