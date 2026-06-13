@@ -2,7 +2,7 @@
  * Jest global setup — runs after the test framework is installed.
  * Extends Jest matchers with react-native-testing-library assertions.
  */
-import '@testing-library/jest-native/extend-expect';
+import '@testing-library/react-native/extend-expect';
 
 // Silence specific React Native warnings that are irrelevant in test environment
 const originalWarn = console.warn.bind(console);
