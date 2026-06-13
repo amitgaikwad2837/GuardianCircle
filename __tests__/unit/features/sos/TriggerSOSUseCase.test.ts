@@ -80,7 +80,7 @@ describe('TriggerSOSUseCase', () => {
 
   it('creates an incident in the repository', async () => {
     await useCase.execute({ method: 'long_press', isSilent: false });
-    expect(mockSOSRepo.createIncident).toHaveBeenCalledOnce();
+    expect(mockSOSRepo.createIncident).toHaveBeenCalledTimes(1);
   });
 
   it('dispatches SMS to all active guardians', async () => {

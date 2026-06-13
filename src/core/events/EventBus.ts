@@ -39,6 +39,10 @@ class TypedEventBus {
   ): void {
     this.emitter.off(event, listener);
   }
+
+  removeAllListeners<K extends keyof AppEvents>(event?: K): void {
+    this.emitter.removeAllListeners(event);
+  }
 }
 
 export const EventBus = new TypedEventBus();

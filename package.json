@@ -86,8 +86,9 @@
   },
   "jest": {
     "preset": "react-native",
-    "setupFilesAfterFramework": ["<rootDir>/jest.setup.ts"],
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.ts"],
     "moduleNameMapper": {
+      "^@core/sms/SmsService$": "<rootDir>/src/core/sms/SMSService",
       "^@core/(.*)$": "<rootDir>/src/core/$1",
       "^@features/(.*)$": "<rootDir>/src/features/$1",
       "^@shared/(.*)$": "<rootDir>/src/shared/$1",
@@ -96,7 +97,7 @@
     },
     "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
     "transformIgnorePatterns": [
-      "node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-mmkv|react-native-keychain|react-native-permissions|react-native-haptic-feedback|@notifee)/)"
+      "node_modules/(?!(react-native|@react-native|@react-navigation|react-native-reanimated|react-native-gesture-handler|react-native-screens|react-native-safe-area-context|react-native-mmkv|react-native-keychain|react-native-permissions|react-native-haptic-feedback|@notifee|uuid|@op-engineering|eventemitter3)/)"
     ],
     "coverageThreshold": {
       "global": {

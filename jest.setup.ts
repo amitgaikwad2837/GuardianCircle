@@ -75,6 +75,10 @@ jest.mock('react-native', () => {
   RN.NativeModules.ContactPickerModule = {
     pickContact: jest.fn().mockResolvedValue({ displayName: 'Test Contact', phoneNumbers: ['+919876543210'] }),
   };
+  RN.NativeModules.SensorModule = {
+    startListening: jest.fn(),
+    stopListening: jest.fn(),
+  };
   return RN;
 });
 

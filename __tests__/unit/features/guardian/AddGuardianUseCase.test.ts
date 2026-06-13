@@ -65,11 +65,12 @@ describe('AddGuardianUseCase', () => {
     ).rejects.toThrow('Invalid phone number');
   });
 
-  it('sets trustLevel=2 when publicKey provided', async () => {
+  it('sets trustLevel=2 when signingPublicKey and encryptionPublicKey provided', async () => {
     await useCase.execute({
       displayName: 'Priya',
       phoneNumber: '+919876543210',
-      publicKey: 'base64pubkey',
+      signingPublicKey: 'base64signingkey',
+      encryptionPublicKey: 'base64encryptionkey',
     });
     expect(mockRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({ trustLevel: 2 }),

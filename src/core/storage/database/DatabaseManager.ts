@@ -1,5 +1,6 @@
 import { open, type DB } from '@op-engineering/op-sqlite';
 import { KeyManager } from '@core/crypto/KeyManager';
+import { migrations } from './migrations';
 
 let db: DB | null = null;
 let initPromise: Promise<DB> | null = null;
@@ -45,7 +46,7 @@ export const DatabaseManager = {
     const [{ user_version }] = (database.execute('PRAGMA user_version') as unknown as { rows: { _array: [{ user_version: number }] } }).rows._array;
     let version = user_version ?? 0;
 
-    const migrations = await this.loadMigrations();
+    const migrations = this.loadMigrations();
 
     for (const migration of migrations) {
       if (migration.version > version) {
@@ -64,9 +65,7 @@ export const DatabaseManager = {
     }
   },
 
-  async loadMigrations(): Promise<{ version: number; sql: string }[]> {
-    // Migrations are imported as raw SQL strings bundled with the app
-    const { migrations } = await import('./migrations');
+  loadMigrations(): { version: number; sql: string }[] {
     return migrations;
   },
 
