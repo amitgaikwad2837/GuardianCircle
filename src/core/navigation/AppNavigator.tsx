@@ -1,8 +1,9 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator }   from '@react-navigation/bottom-tabs';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
+import { EventBus } from '@core/events/EventBus';
 import { colors } from '@core/theme/tokens';
 
 import type {
@@ -120,6 +121,7 @@ function OnboardingNavigator(): React.JSX.Element {
       <OnboardingStack.Screen name="Permissions"    component={Permissions} />
       <OnboardingStack.Screen name="IdentitySetup"  component={IdentitySetup} />
       <OnboardingStack.Screen name="FirstGuardian"  component={FirstGuardian} />
+      <OnboardingStack.Screen name="QRPair"         component={QRPair} />
     </OnboardingStack.Navigator>
   );
 }
@@ -223,6 +225,13 @@ function MainNavigator(): React.JSX.Element {
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export function AppNavigator(): React.JSX.Element {
-  const onboardingComplete = PreferencesStore.getBoolean(PREF_KEYS.ONBOARDING_COMPLETE);
-  return onboardingComplete ? <MainNavigator /> : <OnboardingNavigator />;
+  const [onboardingDone, setOnboardingDone] = useState(
+    () => PreferencesStore.getBoolean(PREF_KEYS.ONBOARDING_COMPLETE) ?? false,
+  );
+
+  useEffect(() => {
+    return EventBus.on('onboarding:complete', () => setOnboardingDone(true));
+  }, []);
+
+  return onboardingDone ? <MainNavigator /> : <OnboardingNavigator />;
 }

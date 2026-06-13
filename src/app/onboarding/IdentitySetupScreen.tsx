@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { OnboardingStackParams } from '@core/navigation/NavigationTypes';
 import { AccessibleButton } from '@shared/components/AccessibleButton';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
-import { colors, spacing, typography } from '@core/theme/tokens';
+import { colors, spacing, typography, radius } from '@core/theme/tokens';
 
 type Nav = NativeStackNavigationProp<OnboardingStackParams, 'IdentitySetup'>;
 
@@ -23,13 +23,16 @@ export default function IdentitySetupScreen(): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title} accessibilityRole="header">
-          What should your guardians call you?
-        </Text>
-        <Text style={styles.subtitle}>
-          This is stored only on your device. GuardianCircle never sees your name.
-        </Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+
+        <View style={styles.header}>
+          <Text style={styles.emoji}>👤</Text>
+          <Text style={styles.title} accessibilityRole="header">What's your name?</Text>
+          <Text style={styles.subtitle}>
+            Your guardians will see this name in emergency alerts.
+            It's stored only on your device — GuardianCircle never sees it.
+          </Text>
+        </View>
 
         <TextInput
           style={styles.input}
@@ -42,22 +45,18 @@ export default function IdentitySetupScreen(): React.JSX.Element {
           returnKeyType="done"
           onSubmitEditing={handleContinue}
           accessibilityLabel="Your name"
-          accessibilityHint="This name will appear in emergency alerts sent to your guardians"
+          accessibilityHint="This name will appear in alerts sent to your guardians"
         />
-
-        <Text style={styles.note}>
-          You can change this any time in Settings.
-        </Text>
 
         <View style={styles.actions}>
           <AccessibleButton
             onPress={handleContinue}
             accessibilityLabel="Continue"
-            variant="danger"
+            variant="primary"
             minHeight={56}
             style={styles.cta}
           >
-            <Text>Continue</Text>
+            Continue
           </AccessibleButton>
 
           <AccessibleButton
@@ -65,10 +64,12 @@ export default function IdentitySetupScreen(): React.JSX.Element {
             accessibilityLabel="Skip — add name later"
             variant="ghost"
             minHeight={48}
+            style={styles.cta}
           >
-            <Text>Skip for now</Text>
+            Skip for now
           </AccessibleButton>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -76,20 +77,20 @@ export default function IdentitySetupScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.light.background },
-  container: { padding: spacing.xl, gap: spacing.md },
-  title: { ...typography.headlineLarge, color: colors.light.onBackground },
-  subtitle: { ...typography.bodyLarge, color: colors.light.onSurfaceVariant },
+  scroll: { flexGrow: 1, padding: spacing.xl, gap: spacing.lg },
+  header: { alignItems: 'center', gap: spacing.sm, paddingTop: spacing.xl },
+  emoji: { fontSize: 48 },
+  title: { ...typography.headlineLarge, color: colors.light.onBackground, textAlign: 'center' },
+  subtitle: { ...typography.bodyLarge, color: colors.light.onSurfaceVariant, textAlign: 'center' },
   input: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.light.border,
-    borderRadius: 8,
+    borderRadius: radius.md,
     padding: spacing.md,
     ...typography.bodyLarge,
     color: colors.light.onBackground,
     backgroundColor: colors.light.surface,
-    marginTop: spacing.md,
   },
-  note: { ...typography.bodyMedium, color: colors.light.onSurfaceVariant },
-  actions: { gap: spacing.md, marginTop: spacing.xl },
+  actions: { gap: spacing.sm },
   cta: { width: '100%' },
 });

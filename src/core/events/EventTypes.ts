@@ -25,6 +25,9 @@ export interface DistressSignal {
  * Features communicate ONLY through these events — no direct imports between features.
  */
 export type AppEvents = {
+  // ─── Onboarding ────────────────────────────────────
+  'onboarding:complete': Record<string, never>;
+
   // ─── SOS ───────────────────────────────────────────
   'sos:triggered': {
     incidentId: string;

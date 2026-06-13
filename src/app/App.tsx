@@ -93,7 +93,7 @@ export default function App(): React.JSX.Element {
   if (initState === 'loading') {
     return (
       <View style={styles.splash}>
-        <ActivityIndicator size="large" color={colors.sosRed} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -121,7 +121,7 @@ export default function App(): React.JSX.Element {
                 <Suspense
                   fallback={
                     <View style={styles.splash}>
-                      <ActivityIndicator size="large" color={colors.sosRed} />
+                      <ActivityIndicator size="large" color={colors.primary} />
                     </View>
                   }
                 >

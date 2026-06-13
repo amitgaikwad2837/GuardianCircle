@@ -1,109 +1,145 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { OnboardingStackParams } from '@core/navigation/NavigationTypes';
 import { AccessibleButton } from '@shared/components/AccessibleButton';
 import { PermissionManager } from '@core/permissions/PermissionManager';
-import { colors, spacing, typography } from '@core/theme/tokens';
+import { colors, spacing, typography, radius } from '@core/theme/tokens';
 
 type Nav = NativeStackNavigationProp<OnboardingStackParams, 'Permissions'>;
 
-const REQUIRED_PERMISSIONS = [
-  { key: 'sms' as const, label: 'SMS', reason: 'To send emergency alerts to your guardians' },
-  { key: 'call' as const, label: 'Phone calls', reason: 'To call guardians if they don\'t respond' },
-  { key: 'location' as const, label: 'Location', reason: 'To share your location during an emergency' },
-];
-
-const OPTIONAL_PERMISSIONS = [
-  { key: 'backgroundLocation' as const, label: 'Background location', reason: 'For journey monitoring when app is in background' },
-  { key: 'contacts' as const, label: 'Contacts', reason: 'To add guardians from your phone contacts' },
-  { key: 'microphone' as const, label: 'Microphone', reason: 'To record audio evidence (you control when this happens)' },
-  { key: 'camera' as const, label: 'Camera', reason: 'To scan QR codes when pairing with guardians' },
+const PERMISSIONS = [
+  {
+    key: 'sms' as const,
+    icon: '💬',
+    label: 'Send SMS',
+    reason: 'Alert your guardians when you trigger an SOS',
+    required: true,
+  },
+  {
+    key: 'call' as const,
+    icon: '📞',
+    label: 'Make calls',
+    reason: 'Call guardians at escalation level 2 if they don\'t respond',
+    required: true,
+  },
+  {
+    key: 'location' as const,
+    icon: '📍',
+    label: 'Location',
+    reason: 'Share your location with guardians during an emergency',
+    required: true,
+  },
+  {
+    key: 'notifications' as const,
+    icon: '🔔',
+    label: 'Notifications',
+    reason: 'Show alerts, check-in reminders and journey status',
+    required: true,
+  },
+  {
+    key: 'contacts' as const,
+    icon: '👥',
+    label: 'Contacts',
+    reason: 'Add guardians from your phone contacts (optional)',
+    required: false,
+  },
+  {
+    key: 'camera' as const,
+    icon: '📷',
+    label: 'Camera',
+    reason: 'Scan QR codes when pairing with other GuardianCircle users (optional)',
+    required: false,
+  },
+  {
+    key: 'backgroundLocation' as const,
+    icon: '🗺️',
+    label: 'Background location',
+    reason: 'Monitor your journey when the app is in the background (optional)',
+    required: false,
+  },
+  {
+    key: 'microphone' as const,
+    icon: '🎙️',
+    label: 'Microphone',
+    reason: 'Record audio evidence at your request only (optional)',
+    required: false,
+  },
 ];
 
 export default function PermissionsScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
-  const [optionalEnabled, setOptionalEnabled] = useState<Record<string, boolean>>({
-    backgroundLocation: false,
-    contacts: true,
-    microphone: false,
-    camera: true,
-  });
+  const [granting, setGranting] = useState(false);
 
   const handleGrant = async (): Promise<void> => {
-    // Required
-    for (const perm of REQUIRED_PERMISSIONS) {
-      await PermissionManager.request(perm.key);
-    }
-    // Optional — only request if enabled
-    for (const perm of OPTIONAL_PERMISSIONS) {
-      if (optionalEnabled[perm.key]) {
+    setGranting(true);
+    try {
+      // Request all permissions — Android shows OS dialog for each
+      for (const perm of PERMISSIONS) {
         await PermissionManager.request(perm.key);
       }
+    } finally {
+      setGranting(false);
+      navigation.navigate('IdentitySetup');
     }
-    navigation.navigate('IdentitySetup');
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title} accessibilityRole="header">
-          Permissions
-        </Text>
-        <Text style={styles.subtitle}>
-          GuardianCircle needs these to protect you. You can change them any time in Settings.
-        </Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Play Store Personal Safety policy: fall/crash detection disclaimer must appear during onboarding */}
-        <View style={styles.disclosureCard}>
-          <Text style={styles.disclosureTitle}>Safety Detection Features</Text>
-          <Text style={styles.disclosureBody}>
-            GuardianCircle includes fall detection and vehicle crash detection using your
-            phone&apos;s accelerometer and gyroscope. These features may not detect all falls or
-            crashes, and may produce false alerts. They are a safety assistance tool only and do
-            not replace emergency services or professional medical advice.{'\n\n'}
-            When a possible fall or crash is detected, a countdown screen appears giving you time
-            to cancel before an SOS is sent to your guardians.
+        <View style={styles.header}>
+          <Text style={styles.emoji}>🔐</Text>
+          <Text style={styles.title} accessibilityRole="header">A few permissions</Text>
+          <Text style={styles.subtitle}>
+            GuardianCircle needs these to keep you safe. You can change them any time in Settings.
           </Text>
         </View>
 
-        <Text style={styles.sectionLabel}>Required</Text>
-        {REQUIRED_PERMISSIONS.map((p) => (
-          <View key={p.key} style={styles.permRow} accessibilityRole="text">
-            <View style={styles.permText}>
-              <Text style={styles.permLabel}>{p.label}</Text>
-              <Text style={styles.permReason}>{p.reason}</Text>
-            </View>
-          </View>
-        ))}
+        {/* Disclaimer card — required by Play Store Personal Safety policy */}
+        <View style={styles.disclaimer}>
+          <Text style={styles.disclaimerTitle}>About fall & crash detection</Text>
+          <Text style={styles.disclaimerBody}>
+            GuardianCircle can detect possible falls or vehicle crashes using your phone's sensors.
+            These features assist but do not replace emergency services. A countdown screen
+            lets you cancel any false alert before it's sent.
+          </Text>
+        </View>
 
-        <Text style={styles.sectionLabel}>Optional</Text>
-        {OPTIONAL_PERMISSIONS.map((p) => (
-          <View key={p.key} style={styles.permRow}>
-            <View style={styles.permText}>
-              <Text style={styles.permLabel}>{p.label}</Text>
-              <Text style={styles.permReason}>{p.reason}</Text>
+        <View style={styles.permList}>
+          {PERMISSIONS.map((p) => (
+            <View key={p.key} style={styles.permRow}>
+              <Text style={styles.permIcon}>{p.icon}</Text>
+              <View style={styles.permText}>
+                <View style={styles.permTitleRow}>
+                  <Text style={styles.permLabel}>{p.label}</Text>
+                  {p.required && <View style={styles.badge}><Text style={styles.badgeText}>Required</Text></View>}
+                </View>
+                <Text style={styles.permReason}>{p.reason}</Text>
+              </View>
             </View>
-            <Switch
-              value={optionalEnabled[p.key] ?? false}
-              onValueChange={(v) => setOptionalEnabled((s) => ({ ...s, [p.key]: v }))}
-              accessibilityLabel={`Enable ${p.label} permission`}
-              trackColor={{ true: colors.sosRed }}
-            />
-          </View>
-        ))}
+          ))}
+        </View>
 
         <AccessibleButton
           onPress={() => { void handleGrant(); }}
-          accessibilityLabel="Grant Permissions and Continue"
-          variant="danger"
+          accessibilityLabel="Allow permissions and continue"
+          variant="primary"
           minHeight={56}
           style={styles.cta}
+          disabled={granting}
         >
-          <Text>Grant Permissions</Text>
+          {granting ? 'Requesting…' : 'Allow & Continue'}
         </AccessibleButton>
+
+        {granting && <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.sm }} />}
+
+        <Text style={styles.note}>
+          Android will ask for each permission one at a time.
+        </Text>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -111,23 +147,44 @@ export default function PermissionsScreen(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.light.background },
-  container: { padding: spacing.xl, gap: spacing.sm },
-  title: { ...typography.headlineLarge, color: colors.light.onBackground },
-  subtitle: { ...typography.bodyLarge, color: colors.light.onSurfaceVariant, marginBottom: spacing.md },
-  sectionLabel: { ...typography.labelLarge, color: colors.light.onSurfaceVariant, marginTop: spacing.lg, textTransform: 'uppercase', letterSpacing: 1 },
-  permRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.light.divider },
-  permText: { flex: 1, gap: 2 },
-  permLabel: { ...typography.titleMedium, color: colors.light.onBackground },
-  permReason: { ...typography.bodyMedium, color: colors.light.onSurfaceVariant },
-  cta: { marginTop: spacing.xl, width: '100%' },
-  disclosureCard: {
-    backgroundColor: colors.light.surface,
-    borderRadius: 12,
+  scroll: { flexGrow: 1, padding: spacing.xl, gap: spacing.lg },
+  header: { alignItems: 'center', gap: spacing.sm },
+  emoji: { fontSize: 48 },
+  title: { ...typography.headlineLarge, color: colors.light.onBackground, textAlign: 'center' },
+  subtitle: { ...typography.bodyLarge, color: colors.light.onSurfaceVariant, textAlign: 'center' },
+  disclaimer: {
+    backgroundColor: colors.primarySurface,
+    borderRadius: radius.md,
     padding: spacing.md,
-    marginBottom: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: colors.sosRed,
+    borderLeftColor: colors.primary,
+    gap: spacing.xs,
   },
-  disclosureTitle: { ...typography.titleSmall, color: colors.light.onBackground, marginBottom: spacing.xs },
-  disclosureBody: { ...typography.bodySmall, color: colors.light.onSurfaceVariant, lineHeight: 18 },
+  disclaimerTitle: { ...typography.titleSmall, color: colors.light.onBackground },
+  disclaimerBody: { ...typography.bodySmall, color: colors.light.onSurfaceVariant, lineHeight: 18 },
+  permList: { gap: spacing.sm },
+  permRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    backgroundColor: colors.light.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.light.border,
+  },
+  permIcon: { fontSize: 22, marginTop: 2 },
+  permText: { flex: 1, gap: 4 },
+  permTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  permLabel: { ...typography.titleSmall, color: colors.light.onBackground },
+  permReason: { ...typography.bodySmall, color: colors.light.onSurfaceVariant },
+  badge: {
+    backgroundColor: colors.primarySurface,
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  badgeText: { ...typography.labelMedium, color: colors.primary, fontSize: 10 },
+  cta: { width: '100%' },
+  note: { ...typography.bodySmall, color: colors.light.onSurfaceVariant, textAlign: 'center' },
 });

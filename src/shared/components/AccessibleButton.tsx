@@ -19,7 +19,11 @@ interface Props {
   accessibilityLabel: string;
   accessibilityHint?: string;
   disabled?: boolean;
-  variant?: 'primary' | 'danger' | 'ghost';
+  /** primary   — teal filled   (main actions)
+   *  secondary — indigo filled  (alt actions)
+   *  ghost     — teal-bordered  (skip / tertiary)
+   *  danger    — red filled     (SOS button only) */
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   minHeight?: number;
 }
 
@@ -41,6 +45,8 @@ export function AccessibleButton({
     onPress();
   };
 
+  const textColor = variant === 'ghost' ? colors.light.primary : '#FFFFFF';
+
   return (
     <TouchableOpacity
       onPress={handlePress}
@@ -50,40 +56,53 @@ export function AccessibleButton({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       style={[styles.base, styles[variant], { minHeight }, disabled && styles.disabled, style]}
-      activeOpacity={0.7}
+      activeOpacity={0.75}
     >
-      {typeof children === 'string' ? (
-        <Text style={[styles.text, textStyle]}>{children}</Text>
-      ) : (
-        children
-      )}
+      <Text style={[styles.label, { color: textColor }, textStyle]}>{children}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: touchTargets.minimum,
   },
   primary: {
     backgroundColor: colors.light.primary,
+    elevation: 3,
+    shadowColor: colors.light.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
   },
-  danger: {
-    backgroundColor: colors.sosRed,
+  secondary: {
+    backgroundColor: colors.light.secondary,
+    elevation: 2,
+    shadowColor: colors.light.secondary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   ghost: {
     backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.light.border,
+    borderWidth: 1.5,
+    borderColor: colors.light.primary,
   },
-  text: {
+  danger: {
+    backgroundColor: colors.sosRed,
+    elevation: 5,
+    shadowColor: colors.sosRed,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  label: {
     ...typography.labelLarge,
-    color: '#FFFFFF',
   },
   disabled: {
     opacity: 0.4,

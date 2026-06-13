@@ -7,6 +7,8 @@ export type OnboardingStackParams = {
   Permissions: undefined;
   IdentitySetup: undefined;
   FirstGuardian: undefined;
+  // QR scan screen reused during onboarding; prefill bypasses the picker step
+  QRPair: { mode: 'show' | 'scan'; prefillName?: string; prefillPhone?: string };
 };
 
 // ─── Main Tabs ───────────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ export type GuardianStackParams = {
     prefill?: { displayName: string; phoneNumber: string; source: 'phonebook' | 'manual' };
     guardianId?: string; // present when editing
   };
-  QRPair: { mode: 'show' | 'scan' };
+  QRPair: { mode: 'show' | 'scan'; prefillName?: string; prefillPhone?: string };
 };
 
 // ─── Journey Stack ───────────────────────────────────────────────────────────
