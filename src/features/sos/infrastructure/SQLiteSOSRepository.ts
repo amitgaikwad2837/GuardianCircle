@@ -124,7 +124,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
     const result = this.db.execute(
       'SELECT * FROM incidents WHERE status = \'active\' ORDER BY triggered_at DESC LIMIT 1',
     );
-    const rows = (result as unknown as { rows: { _array: IncidentRow[] } }).rows._array;
+    const rows = (result as unknown as { rows?: { _array: IncidentRow[] } }).rows?._array ?? [];
     const row = rows[0];
     return Promise.resolve(row !== null && row !== undefined ? rowToEvent(row) : null);
   }
@@ -134,7 +134,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
       'SELECT * FROM incidents WHERE id = ? LIMIT 1',
       [id],
     );
-    const rows = (result as unknown as { rows: { _array: IncidentRow[] } }).rows._array;
+    const rows = (result as unknown as { rows?: { _array: IncidentRow[] } }).rows?._array ?? [];
     const row = rows[0];
     return Promise.resolve(row !== null && row !== undefined ? rowToEvent(row) : null);
   }
@@ -144,7 +144,7 @@ export class SQLiteSOSRepository implements ISOSRepository {
       'SELECT * FROM incidents ORDER BY triggered_at DESC LIMIT ?',
       [limit],
     );
-    return Promise.resolve((result as unknown as { rows: { _array: IncidentRow[] } }).rows._array.map(rowToEvent));
+    return Promise.resolve(((result as unknown as { rows?: { _array: IncidentRow[] } }).rows?._array ?? []).map(rowToEvent));
   }
 
   /** Records which guardian was alerted and via which method. */

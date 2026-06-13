@@ -97,7 +97,7 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
     const result = await this.db.execute(
       'SELECT * FROM journeys WHERE status = \'active\' ORDER BY started_at DESC LIMIT 1',
     );
-    const rows = (result as unknown as { rows: { _array: JourneyRow[] } }).rows._array;
+    const rows = (result as unknown as { rows?: { _array: JourneyRow[] } }).rows?._array ?? [];
     return rows[0] ? rowToJourney(rows[0]) : null;
   }
 
@@ -106,7 +106,7 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
       'SELECT * FROM journeys WHERE id = ?',
       [id],
     );
-    const rows = (result as unknown as { rows: { _array: JourneyRow[] } }).rows._array;
+    const rows = (result as unknown as { rows?: { _array: JourneyRow[] } }).rows?._array ?? [];
     return rows[0] ? rowToJourney(rows[0]) : null;
   }
 
@@ -141,7 +141,7 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
       'SELECT * FROM journey_waypoints WHERE journey_id = ? ORDER BY recorded_at ASC',
       [journeyId],
     );
-    return (result as unknown as { rows: { _array: WaypointRow[] } }).rows._array.map(rowToWaypoint);
+    return ((result as unknown as { rows?: { _array: WaypointRow[] } }).rows?._array ?? []).map(rowToWaypoint);
   }
 
   async getHistory(limit = 20): Promise<Journey[]> {
@@ -149,6 +149,6 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
       'SELECT * FROM journeys WHERE status != \'active\' ORDER BY started_at DESC LIMIT ?',
       [limit],
     );
-    return (result as unknown as { rows: { _array: JourneyRow[] } }).rows._array.map(rowToJourney);
+    return ((result as unknown as { rows?: { _array: JourneyRow[] } }).rows?._array ?? []).map(rowToJourney);
   }
 }

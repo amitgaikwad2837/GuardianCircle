@@ -62,19 +62,19 @@ export class SQLiteGeofenceRepository implements IGeofenceRepository {
 
   async getAll(): Promise<Geofence[]> {
     const result = await this.db.execute('SELECT * FROM geofences ORDER BY created_at DESC');
-    return (result as unknown as { rows: { _array: GeofenceRow[] } }).rows._array.map(rowToGeofence);
+    return ((result as unknown as { rows?: { _array: GeofenceRow[] } }).rows?._array ?? []).map(rowToGeofence);
   }
 
   async getActive(): Promise<Geofence[]> {
     const result = await this.db.execute(
       'SELECT * FROM geofences WHERE is_active = 1 ORDER BY created_at DESC',
     );
-    return (result as unknown as { rows: { _array: GeofenceRow[] } }).rows._array.map(rowToGeofence);
+    return ((result as unknown as { rows?: { _array: GeofenceRow[] } }).rows?._array ?? []).map(rowToGeofence);
   }
 
   async getById(id: string): Promise<Geofence | null> {
     const result = await this.db.execute('SELECT * FROM geofences WHERE id = ?', [id]);
-    const rows = (result as unknown as { rows: { _array: GeofenceRow[] } }).rows._array;
+    const rows = (result as unknown as { rows?: { _array: GeofenceRow[] } }).rows?._array ?? [];
     return rows[0] ? rowToGeofence(rows[0]) : null;
   }
 

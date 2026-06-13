@@ -1,4 +1,4 @@
-import { open, type DB } from '@op-engineering/op-sqlite';
+import { open, type DB, type QueryResult } from '@op-engineering/op-sqlite';
 import { KeyManager } from '@core/crypto/KeyManager';
 import { migrations } from './migrations';
 
@@ -6,6 +6,14 @@ let db: DB | null = null;
 let initPromise: Promise<DB> | null = null;
 
 const DB_NAME = 'guardiancircle.db';
+
+/**
+ * Safely extracts rows from an op-sqlite QueryResult.
+ * `rows` is optional in the type — undefined for write-only queries.
+ */
+export function sqlRows<T = Record<string, unknown>>(result: QueryResult): T[] {
+  return (result.rows?._array as T[] | undefined) ?? [];
+}
 
 /**
  * Manages the SQLCipher-encrypted SQLite database.
@@ -43,12 +51,13 @@ export const DatabaseManager = {
   },
 
   runMigrations(database: DB): void {
-    const [{ user_version }] = (database.execute('PRAGMA user_version') as unknown as { rows: { _array: [{ user_version: number }] } }).rows._array;
-    let version = user_version ?? 0;
+    const pragmaResult = database.execute('PRAGMA user_version');
+    const pragmaRows = sqlRows<{ user_version: number }>(pragmaResult);
+    let version = pragmaRows[0]?.user_version ?? 0;
 
-    const migrations = this.loadMigrations();
+    const migs = this.loadMigrations();
 
-    for (const migration of migrations) {
+    for (const migration of migs) {
       if (migration.version > version) {
         void database.execute('BEGIN TRANSACTION');
         try {
@@ -58,7 +67,6 @@ export const DatabaseManager = {
           void database.execute('ROLLBACK');
           throw new Error(`Migration ${migration.version} failed: ${String(err)}`);
         }
-        // PRAGMA user_version must be set outside a transaction — it is a no-op inside one
         void database.execute(`PRAGMA user_version = ${migration.version}`);
         version = migration.version;
       }
