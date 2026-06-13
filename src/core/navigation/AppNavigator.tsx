@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator }   from '@react-navigation/bottom-tabs';
+import Svg, { Path, Circle } from 'react-native-svg';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { EventBus } from '@core/events/EventBus';
 import { colors } from '@core/theme/tokens';
@@ -57,6 +58,45 @@ const MainTab          = createBottomTabNavigator<MainTabParams>();
 const GuardianStack    = createNativeStackNavigator<GuardianStackParams>();
 const JourneyStack     = createNativeStackNavigator<JourneyStackParams>();
 const SettingsStack    = createNativeStackNavigator<SettingsStackParams>();
+
+// ── Tab icons (SVG, tint-aware) ──────────────────────────────────────────────
+function IconHome({ color, size }: { color: string; size: number }): React.JSX.Element {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
+      <Path d="M9 21V12h6v9" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+function IconGuardians({ color, size }: { color: string; size: number }): React.JSX.Element {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="9" cy="7" r="3" stroke={color} strokeWidth={1.8} />
+      <Path d="M3 20c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="18" cy="8" r="2.5" stroke={color} strokeWidth={1.6} />
+      <Path d="M14.5 20c0-2.485 1.567-4.5 3.5-4.5S21.5 17.515 21.5 20" stroke={color} strokeWidth={1.6} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function IconJourney({ color, size }: { color: string; size: number }): React.JSX.Element {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
+      <Circle cx="12" cy="8" r="2" stroke={color} strokeWidth={1.6} />
+    </Svg>
+  );
+}
+
+function IconSettings({ color, size }: { color: string; size: number }): React.JSX.Element {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={1.8} />
+      <Path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke={color} strokeWidth={1.6} />
+    </Svg>
+  );
+}
 
 const Spinner = (
   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -178,12 +218,14 @@ function MainNavigator(): React.JSX.Element {
     <MainTab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.sosRed,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: '#9E9E9E',
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: '#E0E0E0',
-          elevation: 0,
+          elevation: 4,
+          height: 60,
+          paddingBottom: 8,
         },
       }}
     >
@@ -193,6 +235,7 @@ function MainNavigator(): React.JSX.Element {
         options={{
           tabBarLabel: 'Home',
           tabBarAccessibilityLabel: 'Home — SOS button and status',
+          tabBarIcon: ({ color, size }) => <IconHome color={color} size={size} />,
         }}
       />
       <MainTab.Screen
@@ -201,6 +244,7 @@ function MainNavigator(): React.JSX.Element {
         options={{
           tabBarLabel: 'Guardians',
           tabBarAccessibilityLabel: 'Guardians — manage your trusted contacts',
+          tabBarIcon: ({ color, size }) => <IconGuardians color={color} size={size} />,
         }}
       />
       <MainTab.Screen
@@ -209,6 +253,7 @@ function MainNavigator(): React.JSX.Element {
         options={{
           tabBarLabel: 'Journey',
           tabBarAccessibilityLabel: 'Journey — start a monitored trip',
+          tabBarIcon: ({ color, size }) => <IconJourney color={color} size={size} />,
         }}
       />
       <MainTab.Screen
@@ -217,6 +262,7 @@ function MainNavigator(): React.JSX.Element {
         options={{
           tabBarLabel: 'Settings',
           tabBarAccessibilityLabel: 'Settings — app preferences and security',
+          tabBarIcon: ({ color, size }) => <IconSettings color={color} size={size} />,
         }}
       />
     </MainTab.Navigator>
