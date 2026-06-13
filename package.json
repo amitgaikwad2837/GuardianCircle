@@ -87,6 +87,7 @@
   "jest": {
     "preset": "react-native",
     "setupFilesAfterEnv": ["<rootDir>/jest.setup.ts"],
+    "testPathIgnorePatterns": ["/node_modules/", "/__tests__/e2e/"],
     "moduleNameMapper": {
       "^@core/sms/SmsService$": "<rootDir>/src/core/sms/SMSService",
       "^@core/(.*)$": "<rootDir>/src/core/$1",

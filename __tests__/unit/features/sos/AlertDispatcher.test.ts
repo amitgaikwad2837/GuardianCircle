@@ -1,10 +1,10 @@
 import { AlertDispatcher } from '@features/sos/infrastructure/AlertDispatcher';
-import { SmsService }      from '@core/sms/SmsService';
+import { SmsService }      from '@core/sms/SMSService';
 import type { Guardian }   from '@features/guardian/domain/entities/Guardian';
 import type { AlertPayload } from '@features/sos/domain/interfaces/IAlertDispatcher';
 
 // Mock SmsService
-jest.mock('@core/sms/SmsService', () => ({
+jest.mock('@core/sms/SMSService', () => ({
   SmsService: { send: jest.fn().mockResolvedValue('sent') },
   SmsTemplates: {
     sosAlert: jest.fn().mockReturnValue('🚨 Test needs help!'),
@@ -91,14 +91,14 @@ describe('AlertDispatcher', () => {
     });
 
     it('uses escalation template when level > 0', async () => {
-      const { SmsTemplates } = jest.requireMock('@core/sms/SmsService') as { SmsTemplates: { escalationUpdate: jest.Mock; sosAlert: jest.Mock } };
+      const { SmsTemplates } = jest.requireMock('@core/sms/SMSService') as { SmsTemplates: { escalationUpdate: jest.Mock; sosAlert: jest.Mock } };
       await dispatcher.dispatchSMS(makeGuardian(), makePayload({ escalationLevel: 1 }));
       expect(SmsTemplates.escalationUpdate).toHaveBeenCalled();
       expect(SmsTemplates.sosAlert).not.toHaveBeenCalled();
     });
 
     it('uses SOS template when level = 0', async () => {
-      const { SmsTemplates } = jest.requireMock('@core/sms/SmsService') as { SmsTemplates: { escalationUpdate: jest.Mock; sosAlert: jest.Mock } };
+      const { SmsTemplates } = jest.requireMock('@core/sms/SMSService') as { SmsTemplates: { escalationUpdate: jest.Mock; sosAlert: jest.Mock } };
       await dispatcher.dispatchSMS(makeGuardian(), makePayload({ escalationLevel: 0 }));
       expect(SmsTemplates.sosAlert).toHaveBeenCalled();
     });
