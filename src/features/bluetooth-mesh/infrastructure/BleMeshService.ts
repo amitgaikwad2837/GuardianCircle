@@ -1,5 +1,4 @@
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import { v4 as uuidv4 } from 'uuid';
 import type { BeaconMessageType } from '../domain/entities/MeshBeacon';
 import { ROTATING_ID_INTERVAL_MS } from '../domain/entities/MeshBeacon';
 
@@ -27,7 +26,9 @@ type BeaconCallback = (beacon: ReceivedBeacon) => void;
 
 class BleMeshServiceImpl {
   private emitter: NativeEventEmitter | null = null;
-  private rotatingId = this.newRotatingId();
+  // Lazily generated so the class can be instantiated at module load time
+  // without needing crypto.getRandomValues (not available until bridge is up).
+  private rotatingId = '';
   private rotatingIdTimer: ReturnType<typeof setInterval> | null = null;
 
   get isSupported(): boolean {
@@ -35,8 +36,16 @@ class BleMeshServiceImpl {
   }
 
   private newRotatingId(): string {
-    // 16 pseudo-random bytes encoded as hex — not linked to device identity
-    return uuidv4().replace(/-/g, '') + uuidv4().replace(/-/g, '').slice(0, 0);
+    // Math.random() is sufficient — this ID is pseudonymous, not a secret.
+    // It rotates every 15 min purely to prevent physical tracking.
+    return Array.from({ length: 32 }, () =>
+      Math.floor(Math.random() * 16).toString(16),
+    ).join('');
+  }
+
+  private getRotatingId(): string {
+    if (!this.rotatingId) { this.rotatingId = this.newRotatingId(); }
+    return this.rotatingId;
   }
 
   private startRotating(): void {
@@ -55,10 +64,10 @@ class BleMeshServiceImpl {
 
   async startBeacon(type: BeaconMessageType): Promise<void> {
     if (!native) { return; }
-    // 4-byte hex message ID for deduplication by receivers
-    const messageId = uuidv4().replace(/-/g, '').slice(0, 8);
+    // 8-char hex message ID for deduplication — no crypto needed
+    const messageId = Math.floor(Math.random() * 0xFFFFFFFF).toString(16).padStart(8, '0');
     this.startRotating();
-    await native.startBeacon(TYPE_CODES[type], this.rotatingId, messageId);
+    await native.startBeacon(TYPE_CODES[type], this.getRotatingId(), messageId);
   }
 
   async stopBeacon(): Promise<void> {
