@@ -40,7 +40,7 @@ export class TriggerSOSUseCase {
 
     const guardians = await this.guardianRepo.getActiveGuardians();
 
-    await Promise.allSettled(
+    const dispatchResults = await Promise.allSettled(
       guardians.map(async (guardian) => {
         const payload = {
           incidentId: event.id,
@@ -49,16 +49,29 @@ export class TriggerSOSUseCase {
           escalationLevel: 0 as const,
           isSilent: input.isSilent,
         };
-        await this.dispatcher.dispatchSMS(guardian, payload);
-        await this.dispatcher.dispatchPushNotification(guardian, payload);
+        const [smsResult, pushResult] = await Promise.allSettled([
+          this.dispatcher.dispatchSMS(guardian, payload),
+          this.dispatcher.dispatchPushNotification(guardian, payload),
+        ]);
+        return { guardian, smsResult, pushResult };
       }),
     );
+
+    const anyDelivered = dispatchResults.some((r) => {
+      if (r.status !== 'fulfilled') return false;
+      const { smsResult, pushResult } = r.value;
+      return (
+        (smsResult.status === 'fulfilled' && smsResult.value === 'sent') ||
+        (pushResult.status === 'fulfilled' && pushResult.value === 'sent')
+      );
+    });
 
     EventBus.emit('sos:triggered', {
       incidentId: event.id,
       method: input.method,
       isSilent: input.isSilent,
       location,
+      allDispatchFailed: !anyDelivered,
     });
 
     return event;

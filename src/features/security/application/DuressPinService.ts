@@ -1,5 +1,6 @@
 import { NativeModules } from 'react-native';
 import { SecureStore }   from '@core/storage/secure/SecureStore';
+import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { Logger }        from '@core/logger/Logger';
 
 const TAG = 'DuressPinService';
@@ -17,6 +18,9 @@ const KEYS = {
 /** Minimum and maximum PIN length. */
 const PIN_MIN_LENGTH = 4;
 const PIN_MAX_LENGTH = 8;
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 30_000; // 30 s, doubles on each successive lockout
 
 interface HashResult {
   hash: string;
@@ -93,17 +97,25 @@ export const DuressPinService = {
    *   'real'   — matches the real PIN, proceed with normal login
    *   'duress' — matches the duress PIN, trigger silent SOS + decoy UI
    *   'wrong'  — matches neither
+   * Throws if the account is locked out due to too many failed attempts.
    */
   async checkPin(enteredPin: string): Promise<'real' | 'duress' | 'wrong'> {
+    await DuressPinService.enforceRateLimit();
+
     const realMatch = await DuressPinService.verifyRealPin(enteredPin);
-    if (realMatch) return 'real';
+    if (realMatch) {
+      await DuressPinService.resetFailedAttempts();
+      return 'real';
+    }
 
     const duressMatch = await DuressPinService.verifyDuressPin(enteredPin);
     if (duressMatch) {
+      await DuressPinService.resetFailedAttempts();
       Logger.warn(TAG, 'Duress PIN entered — triggering silent SOS');
       return 'duress';
     }
 
+    await DuressPinService.recordFailedAttempt();
     Logger.debug(TAG, 'Wrong PIN entered');
     return 'wrong';
   },
@@ -123,6 +135,31 @@ export const DuressPinService = {
   },
 
   // ── Private helpers ────────────────────────────────────────────────────────
+
+  async enforceRateLimit(): Promise<void> {
+    const lockedUntil = PreferencesStore.getNumber(PREF_KEYS.PIN_LOCKED_UNTIL) ?? 0;
+    if (Date.now() < lockedUntil) {
+      const remainingSec = Math.ceil((lockedUntil - Date.now()) / 1000);
+      throw new Error(`Too many failed attempts. Try again in ${remainingSec} seconds.`);
+    }
+  },
+
+  async recordFailedAttempt(): Promise<void> {
+    const attempts = (PreferencesStore.getNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS) ?? 0) + 1;
+    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, attempts);
+    if (attempts >= MAX_ATTEMPTS) {
+      // Exponential backoff: 30 s, 60 s, 120 s, …
+      const multiplier = Math.pow(2, Math.floor(attempts / MAX_ATTEMPTS) - 1);
+      const lockoutMs = LOCKOUT_DURATION_MS * multiplier;
+      PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, Date.now() + lockoutMs);
+      Logger.warn(TAG, `PIN locked out for ${lockoutMs / 1000} s after ${attempts} failed attempts`);
+    }
+  },
+
+  async resetFailedAttempts(): Promise<void> {
+    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 0);
+    PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, 0);
+  },
 
   async verifyRealPin(pin: string): Promise<boolean> {
     const stored = await SecureStore.get(KEYS.realPinHash);

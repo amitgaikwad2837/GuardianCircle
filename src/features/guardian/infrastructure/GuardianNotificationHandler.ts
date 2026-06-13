@@ -25,24 +25,42 @@ interface FCMEnvelope {
   encryptedPayload: string;
   signature: string;
   senderPublicKey: string; // ECDSA signing key — used ONLY for lookup + verification
+  // Signed timestamp (ms) inside encryptedPayload is used for replay protection;
+  // this outer field is untrusted and used only to look up the sender before auth.
 }
 
-// Map of signingPublicKey → timestamp of last accepted message
+// Map of signingPublicKey → timestamp of last accepted message (post-verification)
 const lastAcceptedAt = new Map<string, number>();
+
+// Maximum age of a signed message before it is rejected as a replay
+const MAX_MESSAGE_AGE_MS = 90_000; // 90 s — generous for clock skew, tight for replays
+
+let _initialized = false;
+type Unsubscribe = () => void;
+const _unsubs: Unsubscribe[] = [];
 
 export const GuardianNotificationHandler = {
   async initialize(): Promise<void> {
+    if (_initialized) return;
+    _initialized = true;
+
     await this.ensureNotificationChannel();
 
-    messaging().onMessage(async (msg) => { await this.handleMessage(msg); });
+    _unsubs.push(messaging().onMessage(async (msg) => { await this.handleMessage(msg); }));
     messaging().setBackgroundMessageHandler(async (msg) => { await this.handleMessage(msg); });
-    messaging().onTokenRefresh((newToken) => {
+    _unsubs.push(messaging().onTokenRefresh((newToken) => {
       this.broadcastTokenRefresh(newToken).catch((err: unknown) => {
         Logger.warn(TAG, 'Token refresh broadcast failed', { err: String(err) });
       });
-    });
+    }));
 
     Logger.info(TAG, 'Initialized');
+  },
+
+  teardown(): void {
+    _unsubs.forEach((unsub) => unsub());
+    _unsubs.length = 0;
+    _initialized = false;
   },
 
   async handleMessage(msg: FirebaseMessagingTypes.RemoteMessage): Promise<void> {
@@ -58,13 +76,6 @@ export const GuardianNotificationHandler = {
       senderPublicKey:  data['senderPublicKey']!,
     };
 
-    // Rate limit: drop repeated messages from same sender within RATE_LIMIT_MS
-    const lastSeen = lastAcceptedAt.get(envelope.senderPublicKey) ?? 0;
-    if (Date.now() - lastSeen < RATE_LIMIT_MS) {
-      Logger.warn(TAG, 'Rate-limited FCM message from known sender — discarding');
-      return;
-    }
-
     try {
       const guardianRepo = Container.resolve<IGuardianRepository>(DI_TOKENS.IGuardianRepository);
 
@@ -75,7 +86,8 @@ export const GuardianNotificationHandler = {
         return;
       }
 
-      // Verify ECDSA signature with sender's signing key
+      // Verify ECDSA signature BEFORE rate-limit check — prevents forged keys from
+      // consuming or bypassing the rate-limit slot of a legitimate guardian
       const signatureValid = await IdentityManager.verify(
         envelope.encryptedPayload,
         envelope.signature,
@@ -86,12 +98,26 @@ export const GuardianNotificationHandler = {
         return;
       }
 
-      // Record accepted timestamp AFTER successful verification
-      lastAcceptedAt.set(envelope.senderPublicKey, Date.now());
-
-      // Decrypt payload using our ECDH private key
+      // Decrypt payload to extract the signed timestamp for replay protection
       const plaintext = await IdentityManager.decryptFCMPayload(envelope.encryptedPayload);
-      const payload = JSON.parse(plaintext) as AlertPayload;
+      const payload = JSON.parse(plaintext) as AlertPayload & { sentAt?: number; nonce?: string };
+
+      // Reject replays: signed sentAt must be recent and the nonce must not have been seen
+      const sentAt = payload.sentAt ?? 0;
+      if (Date.now() - sentAt > MAX_MESSAGE_AGE_MS) {
+        Logger.warn(TAG, `Rejecting stale FCM message (age ${Date.now() - sentAt} ms) — possible replay`);
+        return;
+      }
+
+      // Rate limit: drop exact-duplicate deliveries (FCM may deliver the same msg twice)
+      const lastSeen = lastAcceptedAt.get(envelope.senderPublicKey) ?? 0;
+      if (Date.now() - lastSeen < RATE_LIMIT_MS) {
+        Logger.warn(TAG, 'Rate-limited FCM message from known sender — discarding duplicate');
+        return;
+      }
+
+      // Record accepted timestamp after all checks pass
+      lastAcceptedAt.set(envelope.senderPublicKey, Date.now());
 
       Logger.warn(TAG, `SOS received from ${guardian.displayName} — incident ${payload.incidentId}`);
 

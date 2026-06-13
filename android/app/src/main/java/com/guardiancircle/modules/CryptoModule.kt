@@ -2,6 +2,7 @@ package com.guardiancircle.modules
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import com.facebook.react.bridge.*
@@ -292,9 +293,22 @@ class CryptoModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun isHardwareBacked(keyAlias: String, promise: Promise) {
         try {
-            val entry = keyStore.getEntry(keyAlias, null)
-            if (entry == null) { promise.resolve(false); return }
-            val isHW = keyStore.getProvider().name == KEYSTORE_PROVIDER
+            val key = keyStore.getKey(keyAlias, null)
+            if (key == null) { promise.resolve(false); return }
+
+            val isHW = when (key) {
+                is java.security.PrivateKey -> {
+                    val keyFactory = KeyFactory.getInstance(key.algorithm, KEYSTORE_PROVIDER)
+                    val keyInfo = keyFactory.getKeySpec(key, KeyInfo::class.java)
+                    keyInfo.isInsideSecureHardware
+                }
+                is javax.crypto.SecretKey -> {
+                    val keyFactory = SecretKeyFactory.getInstance(key.algorithm, KEYSTORE_PROVIDER)
+                    val keyInfo = keyFactory.getKeySpec(key, KeyInfo::class.java) as KeyInfo
+                    keyInfo.isInsideSecureHardware
+                }
+                else -> false
+            }
             promise.resolve(isHW)
         } catch (e: Exception) {
             promise.resolve(false)

@@ -31,6 +31,7 @@ export type AppEvents = {
     method: TriggerMethod;
     isSilent: boolean;
     location: Coordinates | null;
+    allDispatchFailed: boolean;
   };
   'sos:cancelled': { incidentId: string; reason: 'user' | 'timeout' };
   'sos:escalated': { incidentId: string; level: EscalationLevel };

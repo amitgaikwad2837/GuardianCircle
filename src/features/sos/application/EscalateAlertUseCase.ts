@@ -23,11 +23,15 @@ export class EscalateAlertUseCase {
     const senderName = PreferencesStore.getString(PREF_KEYS.USER_DISPLAY_NAME) ?? 'Your contact';
     const guardians = await this.guardianRepo.getActiveGuardians();
 
-    // Level 1+: call priority-1 guardian
+    // Level 1+: call priority-1 guardian — race with a 5 s timeout so a hanging
+    // dialer intent never blocks the level-2 SMS dispatch below
     if (toLevel >= 1) {
       const priority1 = guardians.find((g) => g.notificationPriority === 1);
       if (priority1) {
-        await this.dispatcher.dispatchCall(priority1);
+        await Promise.race([
+          this.dispatcher.dispatchCall(priority1),
+          new Promise<void>((resolve) => setTimeout(resolve, 5_000)),
+        ]);
       }
     }
 

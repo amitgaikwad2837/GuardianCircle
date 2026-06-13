@@ -34,6 +34,9 @@ export const PREF_KEYS = {
   USER_DISPLAY_NAME: 'user_display_name',
 
   RELAY_ENDPOINT: 'relay_endpoint',
+
+  PIN_FAILED_ATTEMPTS: 'gc_pin_failed_attempts',
+  PIN_LOCKED_UNTIL: 'gc_pin_locked_until',
 } as const;
 
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];

@@ -2,6 +2,7 @@ import { open, type DB } from '@op-engineering/op-sqlite';
 import { KeyManager } from '@core/crypto/KeyManager';
 
 let db: DB | null = null;
+let initPromise: Promise<DB> | null = null;
 
 const DB_NAME = 'guardiancircle.db';
 const CURRENT_SCHEMA_VERSION = 6;
@@ -13,16 +14,27 @@ const CURRENT_SCHEMA_VERSION = 6;
 export const DatabaseManager = {
   async initialize(): Promise<DB> {
     if (db) return db;
+    // Prevent concurrent callers from opening the DB and running migrations twice
+    if (initPromise) return initPromise;
+    initPromise = this._open();
+    try {
+      db = await initPromise;
+      return db;
+    } finally {
+      initPromise = null;
+    }
+  },
 
+  async _open(): Promise<DB> {
     const key = await KeyManager.getDatabaseKey();
 
-    db = open({
+    const opened = open({
       name: DB_NAME,
       encryptionKey: key,
     });
 
-    await this.runMigrations(db);
-    return db;
+    await this.runMigrations(opened);
+    return opened;
   },
 
   getDB(): DB {
@@ -42,13 +54,14 @@ export const DatabaseManager = {
         database.execute('BEGIN TRANSACTION');
         try {
           database.execute(migration.sql);
-          database.execute(`PRAGMA user_version = ${migration.version}`);
           database.execute('COMMIT');
-          version = migration.version;
         } catch (err) {
           database.execute('ROLLBACK');
           throw new Error(`Migration ${migration.version} failed: ${String(err)}`);
         }
+        // PRAGMA user_version must be set outside a transaction — it is a no-op inside one
+        database.execute(`PRAGMA user_version = ${migration.version}`);
+        version = migration.version;
       }
     }
   },

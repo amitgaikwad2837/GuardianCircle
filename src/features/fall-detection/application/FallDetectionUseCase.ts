@@ -30,6 +30,7 @@ class FallDetectionUseCaseClass {
   private postImpactSamples: AccelSample[] = [];
   private postImpactStart = 0;
   private isRunning = false;
+  // Stored as Date.now() ms; compared against Date.now() — not sample.timestamp
   private cooldownUntil = 0;
 
   start(): void {
@@ -50,7 +51,8 @@ class FallDetectionUseCaseClass {
   }
 
   private onSample = (sample: AccelSample): void => {
-    const now = sample.timestamp;
+    // Use wall-clock time for cooldown comparison — sample.timestamp is boot-relative
+    const now = Date.now();
     if (now < this.cooldownUntil) return;
 
     const mag = Math.sqrt(sample.x ** 2 + sample.y ** 2 + sample.z ** 2) / 9.81;
@@ -65,14 +67,10 @@ class FallDetectionUseCaseClass {
 
       case 'freefall':
         if (mag < FREEFALL_G_THRESHOLD) {
-          // still in freefall
-          const elapsed = now - this.freefallStart;
-          if (elapsed >= FREEFALL_MIN_DURATION_MS && mag > IMPACT_G_THRESHOLD) {
-            // impact spike detected mid-freefall tracking — rare edge case
-          }
+          // still in freefall — no-op, wait for impact
         } else if (mag > IMPACT_G_THRESHOLD) {
           // impact detected after freefall
-          this.freefallDurationMs = now - this.freefallStart;
+          this.freefallDurationMs = sample.timestamp - this.freefallStart;
           this.impactMagnitude = mag;
           this.phase = 'impact_detected';
           this.postImpactStart = now;
@@ -86,7 +84,7 @@ class FallDetectionUseCaseClass {
       case 'impact_detected':
         this.postImpactSamples.push(sample);
 
-        if (now - this.postImpactStart >= STILLNESS_WINDOW_MS) {
+        if (sample.timestamp - this.postImpactStart >= STILLNESS_WINDOW_MS) {
           this.evaluatePostImpact();
           this.phase = 'idle';
         }
@@ -98,8 +96,14 @@ class FallDetectionUseCaseClass {
     const mags = this.postImpactSamples.map(
       (s) => Math.sqrt(s.x ** 2 + s.y ** 2 + s.z ** 2) / 9.81,
     );
-    const mean = mags.reduce((a, b) => a + b, 0) / mags.length;
-    const variance = mags.reduce((sum, m) => sum + (m - mean) ** 2, 0) / mags.length;
+    if (mags.length === 0) {
+      // No post-impact samples — sensor blackout; treat as motionless (worst case: report fall)
+      Logger.warn(TAG, 'evaluatePostImpact: no samples collected — treating as motionless');
+    }
+    const mean = mags.length > 0 ? mags.reduce((a, b) => a + b, 0) / mags.length : 0;
+    const variance = mags.length > 0
+      ? mags.reduce((sum, m) => sum + (m - mean) ** 2, 0) / mags.length
+      : 0;
 
     const postImpactStillnessMs = variance < STILLNESS_G_THRESHOLD
       ? STILLNESS_WINDOW_MS
