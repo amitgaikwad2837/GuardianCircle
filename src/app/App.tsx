@@ -13,6 +13,7 @@ import { KeyManager } from '@core/crypto/KeyManager';
 import { GuardianNotificationHandler } from '@features/guardian/infrastructure/GuardianNotificationHandler';
 import { JourneyNotificationService } from '@features/journey/infrastructure/JourneyNotificationService';
 import { UnsafePlaceService } from '@features/geofence/infrastructure/UnsafePlaceService';
+import { BleMeshOrchestrator } from '@features/bluetooth-mesh/application/BleMeshOrchestrator';
 import { ThemeProvider } from '@core/theme/ThemeProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Logger } from '@core/logger/Logger';
@@ -79,6 +80,9 @@ export default function App(): React.JSX.Element {
           .startVolumeSOSTrigger()
           .catch(() => {});
       }
+
+      // 8. BLE mesh — offline SOS beaconing + relay scanning
+      await BleMeshOrchestrator.init().catch(() => {});
 
       Logger.info(TAG, 'Bootstrap complete');
       setInitState('ready');

@@ -79,6 +79,13 @@ export type AppEvents = {
   'geofence:entered': { geofenceId: string; type: 'safe' | 'unsafe'; location: Coordinates };
   'geofence:exited': { geofenceId: string; type: 'safe' | 'unsafe'; location: Coordinates };
 
+  // ─── BLE Mesh ──────────────────────────────────────
+  'ble:beacon_started': { messageType: 'SOS' | 'RELAY' };
+  'ble:beacon_stopped': Record<string, never>;
+  'ble:sos_detected': { hopCount: number };
+  'ble:relay_enrolled': Record<string, never>;
+  'ble:relaying': { hopCount: number };
+
   // ─── System ────────────────────────────────────────
   'app:foreground': Record<string, never>;
   'app:background': Record<string, never>;

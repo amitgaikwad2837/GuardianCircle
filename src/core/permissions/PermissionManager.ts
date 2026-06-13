@@ -8,7 +8,9 @@ export type AppPermission =
   | 'contacts'
   | 'microphone'
   | 'camera'
-  | 'notifications';
+  | 'notifications'
+  | 'bluetoothScan'
+  | 'bluetoothAdvertise';
 
 import type { Permission } from 'react-native';
 
@@ -21,6 +23,9 @@ const ANDROID_PERMISSIONS: Record<AppPermission, Permission | null> = {
   microphone: PermissionsAndroid.PERMISSIONS.RECORD_AUDIO as Permission,
   camera: PermissionsAndroid.PERMISSIONS.CAMERA as Permission,
   notifications: null, // Handled via Notifee on Android 13+
+  // Android 12+ (API 31+) — required for BLE advertising and scanning
+  bluetoothScan: 'android.permission.BLUETOOTH_SCAN' as Permission,
+  bluetoothAdvertise: 'android.permission.BLUETOOTH_ADVERTISE' as Permission,
 };
 
 export const PermissionManager = {

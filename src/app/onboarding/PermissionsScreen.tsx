@@ -67,6 +67,20 @@ const PERMISSIONS = [
     reason: 'Record audio evidence at your request only (optional)',
     required: false,
   },
+  {
+    key: 'bluetoothScan' as const,
+    icon: '🔵',
+    label: 'Bluetooth (scan)',
+    reason: 'Detect nearby SOS beacons and relay them when you have signal (optional)',
+    required: false,
+  },
+  {
+    key: 'bluetoothAdvertise' as const,
+    icon: '📡',
+    label: 'Bluetooth (broadcast)',
+    reason: 'Broadcast your own SOS via Bluetooth when there is no mobile signal (optional)',
+    required: false,
+  },
 ];
 
 export default function PermissionsScreen(): React.JSX.Element {

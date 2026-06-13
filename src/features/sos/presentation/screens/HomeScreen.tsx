@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -44,6 +44,10 @@ export default function HomeScreen(): React.JSX.Element {
 
   // Guardian acknowledgements received during an active incident
   const [acknowledgements, setAcknowledgements] = React.useState<string[]>([]);
+
+  // BLE mesh status
+  const [bleBeaconing, setBleBeaconing] = useState(false);
+  const [bleRelaying, setBleRelaying]   = useState(false);
 
   // Clear all timers and listeners on unmount
   useEffect(() => {
@@ -91,6 +95,14 @@ export default function HomeScreen(): React.JSX.Element {
       clearCancelTicker();
     }
   }, [store.status]);
+
+  // BLE mesh status events
+  useEffect(() => {
+    const offStart   = EventBus.on('ble:beacon_started', () => setBleBeaconing(true));
+    const offStop    = EventBus.on('ble:beacon_stopped', () => { setBleBeaconing(false); setBleRelaying(false); });
+    const offRelay   = EventBus.on('ble:relaying', () => setBleRelaying(true));
+    return () => { offStart(); offStop(); offRelay(); };
+  }, []);
 
   const clearHoldTimer = useCallback((): void => {
     if (holdTimerRef.current) {
@@ -318,6 +330,19 @@ export default function HomeScreen(): React.JSX.Element {
         )}
       </View>
 
+      {/* ─── BLE mesh status ─────────────────────────────────────────── */}
+      {(bleBeaconing || bleRelaying) && (
+        <View style={[styles.bleBanner, bleRelaying && styles.bleBannerRelay]}
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={bleRelaying ? 'Relaying nearby SOS via Bluetooth' : 'Broadcasting offline SOS via Bluetooth'}>
+          <Text style={styles.bleBannerText}>
+            {bleRelaying
+              ? '📡 Relaying nearby SOS via Bluetooth'
+              : '📡 Broadcasting offline SOS via Bluetooth'}
+          </Text>
+        </View>
+      )}
+
       {/* ─── Quick actions ───────────────────────────────────────────── */}
       {isIdle && (
         <View style={styles.quickActions}>
@@ -483,6 +508,26 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
       justifyContent: 'space-around',
       paddingHorizontal: theme.spacing.md,
       paddingBottom: theme.spacing.xl,
+    },
+    bleBanner: {
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.primary + '18',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      alignItems: 'center',
+    },
+    bleBannerRelay: {
+      backgroundColor: theme.colors.sosRed + '18',
+      borderColor: theme.colors.sosRed,
+    },
+    bleBannerText: {
+      ...theme.typography.labelSmall,
+      color: theme.colors.onSurface,
+      textAlign: 'center',
     },
   });
 }
