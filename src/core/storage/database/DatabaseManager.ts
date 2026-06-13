@@ -49,13 +49,21 @@ export const DatabaseManager = {
       if (migration.version > version) {
         await database.execute('BEGIN TRANSACTION');
         try {
-          await database.execute(migration.sql);
+          // op-sqlite execute() handles one statement at a time
+          const statements = (migration.sql as string)
+            .split(';')
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0 && !s.startsWith('--'));
+          for (const stmt of statements) {
+            await database.execute(stmt);
+          }
           await database.execute('COMMIT');
         } catch (err) {
           await database.execute('ROLLBACK');
           throw new Error(`Migration ${migration.version} failed: ${String(err)}`);
         }
-        await database.execute(`PRAGMA user_version = ${migration.version}`);
+        // PRAGMA user_version only accepts a literal integer — no params
+        await database.execute(`PRAGMA user_version = ${String(migration.version)}`);
         version = migration.version;
       }
     }
