@@ -33,7 +33,7 @@ export const DatabaseManager = {
       encryptionKey: key,
     });
 
-    await this.runMigrations(opened);
+    this.runMigrations(opened);
     return opened;
   },
 
@@ -42,7 +42,7 @@ export const DatabaseManager = {
     return db;
   },
 
-  async runMigrations(database: DB): Promise<void> {
+  runMigrations(database: DB): void {
     const [{ user_version }] = (database.execute('PRAGMA user_version') as unknown as { rows: { _array: [{ user_version: number }] } }).rows._array;
     let version = user_version ?? 0;
 
