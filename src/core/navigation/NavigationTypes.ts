@@ -35,6 +35,7 @@ export type JourneyStackParams = {
   StartJourney: undefined;
   ActiveJourney: { journeyId: string };
   CheckIn: { checkinId?: string };
+  RecurringCheckIn: undefined;
   Geofences: undefined;
   GeofenceDetail: { geofenceId?: string };
 };

@@ -11,6 +11,7 @@ import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.facebook.react.bridge.*
 import com.facebook.react.module.annotations.ReactModule
+import com.guardiancircle.receivers.VolumeButtonReceiver
 
 /**
  * Manages Android ForegroundService for background distress detection and journey monitoring.
@@ -26,6 +27,8 @@ class BackgroundTaskModule(
         const val SERVICE_CHANNEL_ID = "gc_monitoring"
         const val SOS_CHANNEL_ID = "gc_sos_active"
     }
+
+    private var volumeReceiver: VolumeButtonReceiver? = null
 
     override fun getName() = NAME
 
@@ -51,6 +54,24 @@ class BackgroundTaskModule(
     fun stopMonitoringService(promise: Promise) {
         val intent = Intent(reactContext, MonitoringForegroundService::class.java)
         reactContext.stopService(intent)
+        promise.resolve("stopped")
+    }
+
+    @ReactMethod
+    fun startVolumeSOSTrigger(promise: Promise) {
+        try {
+            if (volumeReceiver != null) { promise.resolve("already_running"); return }
+            volumeReceiver = VolumeButtonReceiver(reactContext).also { it.register() }
+            promise.resolve("started")
+        } catch (e: Exception) {
+            promise.reject("VOLUME_TRIGGER_FAILED", e.message, e)
+        }
+    }
+
+    @ReactMethod
+    fun stopVolumeSOSTrigger(promise: Promise) {
+        volumeReceiver?.unregister()
+        volumeReceiver = null
         promise.resolve("stopped")
     }
 

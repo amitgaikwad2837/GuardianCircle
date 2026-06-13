@@ -34,6 +34,7 @@ const JourneyDashboardScreen  = React.lazy(() => import('@features/journey/prese
 const StartJourneyScreen      = React.lazy(() => import('@features/journey/presentation/screens/StartJourneyScreen'));
 const ActiveJourneyScreen     = React.lazy(() => import('@features/journey/presentation/screens/ActiveJourneyScreen'));
 const CheckInScreen           = React.lazy(() => import('@features/checkin/presentation/screens/CheckInScreen'));
+const RecurringCheckInScreen  = React.lazy(() => import('@features/checkin/presentation/screens/RecurringCheckInScreen'));
 const GeofenceListScreen      = React.lazy(() => import('@features/geofence/presentation/screens/GeofenceListScreen'));
 const GeofenceDetailScreen    = React.lazy(() => import('@features/geofence/presentation/screens/GeofenceDetailScreen'));
 
@@ -93,6 +94,7 @@ const JourneyDashboard = wrapLazy(JourneyDashboardScreen);
 const StartJourney     = wrapLazy(StartJourneyScreen);
 const ActiveJourney    = wrapLazy(ActiveJourneyScreen);
 const CheckIn          = wrapLazy(CheckInScreen);
+const RecurringCheckIn = wrapLazy(RecurringCheckInScreen);
 const Geofences        = wrapLazy(GeofenceListScreen);
 const GeofenceDetail   = wrapLazy(GeofenceDetailScreen);
 
@@ -139,6 +141,7 @@ function JourneyNavigator(): React.JSX.Element {
       <JourneyStack.Screen name="StartJourney"     component={StartJourney} />
       <JourneyStack.Screen name="ActiveJourney"    component={ActiveJourney} />
       <JourneyStack.Screen name="CheckIn"          component={CheckIn} />
+      <JourneyStack.Screen name="RecurringCheckIn" component={RecurringCheckIn} />
       <JourneyStack.Screen name="Geofences"        component={Geofences} />
       <JourneyStack.Screen name="GeofenceDetail"   component={GeofenceDetail} />
     </JourneyStack.Navigator>

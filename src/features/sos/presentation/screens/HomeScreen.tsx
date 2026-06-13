@@ -9,6 +9,9 @@ import {
   AccessibilityInfo,
   StatusBar,
   Alert,
+  Linking,
+  NativeEventEmitter,
+  NativeModules,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -16,6 +19,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { useTheme } from '@core/theme/ThemeProvider';
 import { useSOSStore } from '../store/sosStore';
 import { useSOSActions } from '../hooks/useSOSActions';
+import { EventBus } from '@core/events/EventBus';
 import { Logger } from '@core/logger/Logger';
 
 const TAG = 'HomeScreen';
@@ -37,7 +41,10 @@ export default function HomeScreen(): React.JSX.Element {
   // Cancellation countdown ticker
   const cancelTickRef  = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Clear all timers on unmount
+  // Guardian acknowledgements received during an active incident
+  const [acknowledgements, setAcknowledgements] = React.useState<string[]>([]);
+
+  // Clear all timers and listeners on unmount
   useEffect(() => {
     return () => {
       clearHoldTimer();
@@ -45,6 +52,36 @@ export default function HomeScreen(): React.JSX.Element {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Volume-button hardware SOS trigger (Vol-Down + Vol-Up held 3 s)
+  useEffect(() => {
+    if (!NativeModules.BackgroundTaskModule) return;
+    const emitter = new NativeEventEmitter(NativeModules.BackgroundTaskModule);
+    const sub = emitter.addListener('GC_VOLUME_SOS_TRIGGER', () => {
+      Logger.info(TAG, 'Volume SOS trigger received');
+      if (store.status === 'idle' || store.status === 'cancelled' || store.status === 'resolved') {
+        store.startCountdown(false);
+        startCancelCountdown();
+      }
+    });
+    return () => sub.remove();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.status]);
+
+  // Listen for guardian acknowledgements while an incident is active
+  useEffect(() => {
+    if (store.status !== 'active' && store.status !== 'escalated') {
+      setAcknowledgements([]);
+      return;
+    }
+    const off = EventBus.on('sos:acknowledged', ({ guardianId }) => {
+      setAcknowledgements((prev) =>
+        prev.includes(guardianId) ? prev : [...prev, guardianId],
+      );
+      Vibration.vibrate(200);
+    });
+    return () => off();
+  }, [store.status]);
 
   // If SOS becomes active via an external event (e.g. distress detection),
   // clear the countdown ticker and update UI accordingly
@@ -99,12 +136,27 @@ export default function HomeScreen(): React.JSX.Element {
       Vibration.vibrate(VIBRATE_SOS_FIRED);
       AccessibilityInfo.announceForAccessibility('Emergency alert sent to all guardians.');
       Logger.info(TAG, 'SOS fired', { incidentId: event.id });
+
+      if ((event as typeof event & { allDispatchFailed?: boolean }).allDispatchFailed) {
+        Alert.alert(
+          'Guardians unreachable',
+          'Your SOS was recorded but we could not reach any guardian right now. Call emergency services.',
+          [
+            { text: 'Call 112', onPress: () => void Linking.openURL('tel:112'), style: 'destructive' },
+            { text: 'Dismiss', style: 'cancel' },
+          ],
+        );
+      }
     } catch (err) {
       store.reset();
       Logger.error(TAG, 'fireSOS failed', { error: err instanceof Error ? err.message : String(err) });
       Alert.alert(
-        'Alert Failed',
+        'Alert failed',
         'Could not send emergency alert. Please call emergency services directly.',
+        [
+          { text: 'Call 112', onPress: () => void Linking.openURL('tel:112'), style: 'destructive' },
+          { text: 'Dismiss', style: 'cancel' },
+        ],
       );
     }
   }, [actions, store]);
@@ -238,6 +290,17 @@ export default function HomeScreen(): React.JSX.Element {
             ? `Sending alert in ${store.countdownSeconds} seconds…`
             : 'Hold the button for 3 seconds to alert your guardians'}
         </Text>
+
+        {/* Guardian acknowledgement feedback */}
+        {isActive && acknowledgements.length > 0 && (
+          <View style={styles.ackBanner}>
+            <Text style={styles.ackText}>
+              {acknowledgements.length === 1
+                ? '1 guardian acknowledged — on the way'
+                : `${acknowledgements.length} guardians acknowledged`}
+            </Text>
+          </View>
+        )}
 
         {/* Cancel button — shown during countdown and when active */}
         {(isCountdown || isActive) && (
@@ -399,6 +462,20 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
     cancelButtonText: {
       ...theme.typography.labelLarge,
       color: theme.colors.sosRed,
+    },
+    ackBanner: {
+      marginTop: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.safe + '22',
+      borderWidth: 1,
+      borderColor: theme.colors.safe,
+    },
+    ackText: {
+      ...theme.typography.labelMedium,
+      color: theme.colors.safe,
+      textAlign: 'center',
     },
     quickActions: {
       flexDirection: 'row',
