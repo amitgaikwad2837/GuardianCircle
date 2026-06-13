@@ -20,7 +20,7 @@ export const AIProviderFactory = {
 
   async getFirstAvailable(): Promise<IAIProvider | null> {
     for (const provider of Object.values(PROVIDERS)) {
-      if (await provider.isConfigured()) return provider;
+      if (await provider.isConfigured()) {return provider;}
     }
     return null;
   },

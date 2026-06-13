@@ -32,7 +32,7 @@ export default function AddGuardianScreen(): React.JSX.Element {
     setIsPickingContact(true);
     try {
       const result = await phonebookPicker.execute();
-      if (!result) return;
+      if (!result) {return;}
 
       if (result.rawPhoneNumbers.length === 1 && result.resolvedPhoneNumber) {
         // Single number — go directly to the confirmation form

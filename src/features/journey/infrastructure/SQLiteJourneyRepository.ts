@@ -34,7 +34,7 @@ function rowToJourney(row: JourneyRow): Journey {
     id: row.id,
     destinationLabel: row.destination_label ?? undefined,
     destinationCoordinates:
-      row.destination_lat != null && row.destination_lng != null
+      row.destination_lat !== null && row.destination_lat !== undefined && row.destination_lng !== null && row.destination_lng !== undefined
         ? { lat: row.destination_lat, lng: row.destination_lng, timestamp: row.started_at }
         : undefined,
     startedAt: new Date(row.started_at),
@@ -95,9 +95,9 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
 
   async getActive(): Promise<Journey | null> {
     const result = await this.db.execute(
-      `SELECT * FROM journeys WHERE status = 'active' ORDER BY started_at DESC LIMIT 1`,
+      'SELECT * FROM journeys WHERE status = \'active\' ORDER BY started_at DESC LIMIT 1',
     );
-    const rows = (result as any).rows._array as JourneyRow[];
+    const rows = (result as { rows: { _array: JourneyRow[] } }).rows._array;
     return rows[0] ? rowToJourney(rows[0]) : null;
   }
 
@@ -106,7 +106,7 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
       'SELECT * FROM journeys WHERE id = ?',
       [id],
     );
-    const rows = (result as any).rows._array as JourneyRow[];
+    const rows = (result as { rows: { _array: JourneyRow[] } }).rows._array;
     return rows[0] ? rowToJourney(rows[0]) : null;
   }
 
@@ -119,7 +119,7 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
     if (update.expectedArrivalAt !== undefined) { setClauses.push('expected_arrival_at = ?'); params.push(update.expectedArrivalAt.getTime()); }
     if (update.guardianIds !== undefined) { setClauses.push('guardian_ids = ?'); params.push(JSON.stringify(update.guardianIds)); }
 
-    if (setClauses.length === 0) return;
+    if (setClauses.length === 0) {return;}
     params.push(id);
     await this.db.execute(`UPDATE journeys SET ${setClauses.join(', ')} WHERE id = ?`, params);
   }
@@ -141,14 +141,14 @@ export class SQLiteJourneyRepository implements IJourneyRepository {
       'SELECT * FROM journey_waypoints WHERE journey_id = ? ORDER BY recorded_at ASC',
       [journeyId],
     );
-    return ((result as any).rows._array as WaypointRow[]).map(rowToWaypoint);
+    return (result as { rows: { _array: WaypointRow[] } }).rows._array.map(rowToWaypoint);
   }
 
   async getHistory(limit = 20): Promise<Journey[]> {
     const result = await this.db.execute(
-      `SELECT * FROM journeys WHERE status != 'active' ORDER BY started_at DESC LIMIT ?`,
+      'SELECT * FROM journeys WHERE status != \'active\' ORDER BY started_at DESC LIMIT ?',
       [limit],
     );
-    return ((result as any).rows._array as JourneyRow[]).map(rowToJourney);
+    return (result as { rows: { _array: JourneyRow[] } }).rows._array.map(rowToJourney);
   }
 }

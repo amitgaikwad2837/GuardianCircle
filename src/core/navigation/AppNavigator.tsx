@@ -46,7 +46,9 @@ const LogsScreen              = React.lazy(() => import('@features/settings/pres
 const WipeDataScreen          = React.lazy(() => import('@features/settings/presentation/screens/WipeDataScreen'));
 const AIAssistantScreen       = React.lazy(() => import('@features/ai-assistant/presentation/screens/AIAssistantScreen'));
 const AISetupScreen           = React.lazy(() => import('@features/ai-assistant/presentation/screens/AISetupScreen'));
-const AppIconPickerScreen     = React.lazy(() => import('@features/settings/presentation/screens/AppIconPickerScreen'));
+const AppIconPickerScreen        = React.lazy(() => import('@features/settings/presentation/screens/AppIconPickerScreen'));
+const EvidenceLogScreen          = React.lazy(() => import('@features/evidence/presentation/screens/EvidenceLogScreen'));
+const SensitivityProfilesScreen  = React.lazy(() => import('@features/settings/presentation/screens/SensitivityProfilesScreen'));
 
 // ── Navigators ───────────────────────────────────────────────────────────────
 const OnboardingStack  = createNativeStackNavigator<OnboardingStackParams>();
@@ -105,8 +107,10 @@ const DecoyMode      = wrapLazy(DecoyModeScreen);
 const AppIconPicker  = wrapLazy(AppIconPickerScreen);
 const Logs           = wrapLazy(LogsScreen);
 const WipeData       = wrapLazy(WipeDataScreen);
-const AIAssistant    = wrapLazy(AIAssistantScreen);
-const AISetup        = wrapLazy(AISetupScreen);
+const AIAssistant          = wrapLazy(AIAssistantScreen);
+const AISetup              = wrapLazy(AISetupScreen);
+const EvidenceLog          = wrapLazy(EvidenceLogScreen);
+const SensitivityProfiles  = wrapLazy(SensitivityProfilesScreen);
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
 function OnboardingNavigator(): React.JSX.Element {
@@ -158,8 +162,10 @@ function SettingsNavigator(): React.JSX.Element {
       <SettingsStack.Screen name="AppIconPicker"  component={AppIconPicker} />
       <SettingsStack.Screen name="Logs"           component={Logs} />
       <SettingsStack.Screen name="WipeData"       component={WipeData} />
-      <SettingsStack.Screen name="AIAssistant"    component={AIAssistant} />
-      <SettingsStack.Screen name="AISetup"        component={AISetup} />
+      <SettingsStack.Screen name="AIAssistant"         component={AIAssistant} />
+      <SettingsStack.Screen name="AISetup"             component={AISetup} />
+      <SettingsStack.Screen name="EvidenceLog"         component={EvidenceLog} />
+      <SettingsStack.Screen name="SensitivityProfiles" component={SensitivityProfiles} />
     </SettingsStack.Navigator>
   );
 }

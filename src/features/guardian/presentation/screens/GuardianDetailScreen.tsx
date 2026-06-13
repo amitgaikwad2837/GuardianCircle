@@ -42,7 +42,7 @@ export default function GuardianDetailScreen(): React.JSX.Element {
   const [isRemoving, setIsRemoving] = useState(false);
 
   useEffect(() => {
-    if (guardian !== null) return;
+    if (guardian !== null) {return;}
     void loadGuardian();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guardianId]);
@@ -152,17 +152,17 @@ export default function GuardianDetailScreen(): React.JSX.Element {
           <InfoRow label="Trust level"    value={trustLabel}                              theme={theme} />
           <InfoRow label="Alert priority" value={`#${guardian.notificationPriority}`}    theme={theme} />
           <InfoRow label="Status"         value={guardian.isActive ? 'Active' : 'Inactive'} theme={theme} />
-          {guardian.fcmToken != null && (
+          {guardian.fcmToken !== null && guardian.fcmToken !== undefined && (
             <InfoRow label="Push alerts"  value="App installed ✓"                        theme={theme} />
           )}
-          {guardian.lastAlertAt != null && (
+          {guardian.lastAlertAt !== null && guardian.lastAlertAt !== undefined && (
             <InfoRow
               label="Last alerted"
               value={guardian.lastAlertAt.toLocaleString('en-IN')}
               theme={theme}
             />
           )}
-          {guardian.notes != null && guardian.notes.length > 0 && (
+          {guardian.notes !== null && guardian.notes !== undefined && guardian.notes.length > 0 && (
             <InfoRow label="Notes" value={guardian.notes} theme={theme} />
           )}
         </View>

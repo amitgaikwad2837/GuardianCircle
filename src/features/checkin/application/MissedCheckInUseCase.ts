@@ -22,7 +22,7 @@ export class MissedCheckInUseCase {
 
   async execute(checkinId: string): Promise<void> {
     const checkin = await this.repo.getById(checkinId);
-    if (!checkin || checkin.status !== 'pending') return;
+    if (!checkin || checkin.status !== 'pending') {return;}
 
     await this.repo.updateStatus(checkinId, 'missed', new Date());
     EventBus.emit('checkin:missed', { checkinId });
@@ -51,19 +51,21 @@ export class MissedCheckInUseCase {
 
     // Fallback: setTimeout — only fires while the app is foregrounded.
     // Acceptable for cases where the user is actively using the app.
-    setTimeout(async () => {
-      try {
-        const current = await this.repo.getById(checkinId);
-        if (current?.status === 'missed') {
-          await this.repo.updateStatus(checkinId, 'escalated');
-          EventBus.emit('checkin:escalated', { checkinId });
-          Logger.info(TAG, 'Escalated via setTimeout fallback', { checkinId });
+    setTimeout((): void => {
+      void (async () => {
+        try {
+          const current = await this.repo.getById(checkinId);
+          if (current?.status === 'missed') {
+            await this.repo.updateStatus(checkinId, 'escalated');
+            EventBus.emit('checkin:escalated', { checkinId });
+            Logger.info(TAG, 'Escalated via setTimeout fallback', { checkinId });
+          }
+        } catch (err) {
+          Logger.error(TAG, 'setTimeout escalation failed', {
+            message: err instanceof Error ? err.message.slice(0, 80) : String(err),
+          });
         }
-      } catch (err) {
-        Logger.error(TAG, 'setTimeout escalation failed', {
-          message: err instanceof Error ? err.message.slice(0, 80) : String(err),
-        });
-      }
+      })();
     }, checkin.escalationDelayMinutes * 60_000);
   }
 }

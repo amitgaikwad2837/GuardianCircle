@@ -59,12 +59,12 @@ export default function QRPairScreen(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
 
-  const loadMyQR = useCallback(async () => {
+  const loadMyQR = useCallback(() => {
     setIsLoading(true);
     try {
       // Build payload from own identity
       const pubKey = IdentityManager.getPublicKey();
-      if (!pubKey) throw new Error('Identity not initialised. Complete onboarding first.');
+      if (!pubKey) {throw new Error('Identity not initialised. Complete onboarding first.');}
 
       const encPubKey = IdentityManager.getFCMPublicKey();
       const displayName = 'GuardianCircle User'; // replaced with user preference in Phase 5
@@ -83,7 +83,7 @@ export default function QRPairScreen(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (mode === 'show') void loadMyQR();
+    if (mode === 'show') {void loadMyQR();}
   }, [mode, loadMyQR]);
 
   const handleScanned = async (rawData: string): Promise<void> => {

@@ -18,7 +18,8 @@ const AUTO_DISMISS_SECONDS = 30;
 export default function DistressAlertScreen(): React.JSX.Element {
   const theme   = useTheme();
   const styles  = makeStyles(theme);
-  const { active, dismiss } = useDistressStore();
+  const active  = useDistressStore((s) => s.active);
+  const { dismiss } = useDistressStore();
 
   const [countdown, setCountdown] = useState(AUTO_DISMISS_SECONDS);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -77,7 +78,7 @@ export default function DistressAlertScreen(): React.JSX.Element {
     await uc.execute({ method: 'shake', isSilent: false, isDuress: false });
   };
 
-  if (!active) return <View style={styles.container} />;
+  if (!active) {return <View style={styles.container} />;}
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -112,7 +113,7 @@ export default function DistressAlertScreen(): React.JSX.Element {
 
         <TouchableOpacity
           style={[styles.sosBtn, { backgroundColor: theme.colors.danger }]}
-          onPress={handleTriggerSOS}
+          onPress={() => { void handleTriggerSOS(); }}
           accessibilityRole="button"
           accessibilityLabel="Trigger emergency SOS"
         >

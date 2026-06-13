@@ -15,7 +15,7 @@ export class OpenAIProvider implements IAIProvider {
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${await this.getKey()}` },
-        signal: (AbortSignal as any).timeout(5000),
+        signal: (AbortSignal as { timeout: (ms: number) => AbortSignal }).timeout(5000),
       });
       return response.ok;
     } catch {
@@ -60,14 +60,18 @@ export class OpenAIProvider implements IAIProvider {
   }
 
   async validateKey(key: string): Promise<boolean> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => { controller.abort(); }, 8000);
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: { Authorization: `Bearer ${key}` },
-        signal: (AbortSignal as any).timeout(8000),
+        signal: controller.signal,
       });
       return response.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -81,7 +85,7 @@ export class OpenAIProvider implements IAIProvider {
 
   private async getKey(): Promise<string> {
     const key = await SecureStore.get(KEY_ALIAS);
-    if (!key) throw new Error('OpenAI API key not configured.');
+    if (!key) {throw new Error('OpenAI API key not configured.');}
     return key;
   }
 }

@@ -21,9 +21,9 @@ export class CreateGeofenceUseCase {
   }
 
   async execute(input: CreateGeofenceInput): Promise<Geofence> {
-    if (input.label.trim().length === 0) throw new Error('Geofence label is required.');
-    if (input.radiusMeters < 50) throw new Error('Radius must be at least 50 metres.');
-    if (input.radiusMeters > 50_000) throw new Error('Radius cannot exceed 50 km.');
+    if (input.label.trim().length === 0) {throw new Error('Geofence label is required.');}
+    if (input.radiusMeters < 50) {throw new Error('Radius must be at least 50 metres.');}
+    if (input.radiusMeters > 50_000) {throw new Error('Radius cannot exceed 50 km.');}
 
     return this.repo.create({
       label: input.label.trim(),

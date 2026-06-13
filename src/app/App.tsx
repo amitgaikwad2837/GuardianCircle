@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, NativeModules } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +11,8 @@ import { DatabaseManager } from '@core/storage/database/DatabaseManager';
 import { IdentityManager } from '@core/crypto/IdentityManager';
 import { KeyManager } from '@core/crypto/KeyManager';
 import { GuardianNotificationHandler } from '@features/guardian/infrastructure/GuardianNotificationHandler';
+import { JourneyNotificationService } from '@features/journey/infrastructure/JourneyNotificationService';
+import { UnsafePlaceService } from '@features/geofence/infrastructure/UnsafePlaceService';
 import { ThemeProvider } from '@core/theme/ThemeProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Logger } from '@core/logger/Logger';
@@ -64,6 +66,19 @@ export default function App(): React.JSX.Element {
 
       // 4. Register FCM push notification handler
       await GuardianNotificationHandler.initialize();
+
+      // 5. Subscribe to journey lifecycle events → persistent "Active Journey" notification
+      await JourneyNotificationService.initialize();
+
+      // 6. Record SOS locations as unsafe geofences; alert on re-entry
+      await UnsafePlaceService.initialize();
+
+      // 7. Start volume-button SOS trigger (Vol-Down + Vol-Up chord → emergency SOS)
+      if (NativeModules.BackgroundTaskModule) {
+        await (NativeModules.BackgroundTaskModule as { startVolumeSOSTrigger: () => Promise<void> })
+          .startVolumeSOSTrigger()
+          .catch(() => {});
+      }
 
       Logger.info(TAG, 'Bootstrap complete');
       setInitState('ready');

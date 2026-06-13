@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Animated, Vibration,
-  AccessibilityInfo, Platform,
+  AccessibilityInfo,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,7 +22,8 @@ const TAG = 'FallResponseScreen';
 export default function FallResponseScreen(): React.JSX.Element {
   const theme   = useTheme();
   const styles  = makeStyles(theme);
-  const { activeFall, dismissFall } = useDistressStore();
+  const activeFall      = useDistressStore((s) => s.activeFall);
+  const { dismissFall } = useDistressStore();
 
   const [countdown, setCountdown] = useState(FALL_RESPONSE_TIMEOUT_SECONDS);
   const barAnim       = useRef(new Animated.Value(1)).current;
@@ -67,7 +68,7 @@ export default function FallResponseScreen(): React.JSX.Element {
   }, []);
 
   const autoTriggerSOS = async (): Promise<void> => {
-    if (isTriggering.current) return;
+    if (isTriggering.current) {return;}
     isTriggering.current = true;
     clearInterval(timerRef.current!);
     Vibration.cancel();
@@ -97,7 +98,7 @@ export default function FallResponseScreen(): React.JSX.Element {
     dismissFall();
   };
 
-  if (!activeFall) return <View style={styles.container} />;
+  if (!activeFall) {return <View style={styles.container} />;}
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -144,7 +145,7 @@ export default function FallResponseScreen(): React.JSX.Element {
 
         <TouchableOpacity
           style={[styles.sosBtn, { backgroundColor: theme.colors.danger }]}
-          onPress={autoTriggerSOS}
+          onPress={() => { void autoTriggerSOS(); }}
           accessibilityRole="button"
           accessibilityLabel="Trigger SOS now"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

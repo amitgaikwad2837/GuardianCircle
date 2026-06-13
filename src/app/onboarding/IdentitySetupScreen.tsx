@@ -57,7 +57,7 @@ export default function IdentitySetupScreen(): React.JSX.Element {
             minHeight={56}
             style={styles.cta}
           >
-            Continue
+            <Text>Continue</Text>
           </AccessibleButton>
 
           <AccessibleButton
@@ -66,7 +66,7 @@ export default function IdentitySetupScreen(): React.JSX.Element {
             variant="ghost"
             minHeight={48}
           >
-            Skip for now
+            <Text>Skip for now</Text>
           </AccessibleButton>
         </View>
       </ScrollView>

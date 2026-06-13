@@ -55,6 +55,8 @@ export type SettingsStackParams = {
   Logs: undefined;
   WipeData: undefined;
   About: undefined;
+  EvidenceLog: undefined;
+  SensitivityProfiles: undefined;
 };
 
 // ─── Screen props helpers ────────────────────────────────────────────────────

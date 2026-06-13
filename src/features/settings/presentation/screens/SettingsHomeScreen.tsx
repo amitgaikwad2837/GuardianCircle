@@ -64,6 +64,13 @@ export default function SettingsHomeScreen(): React.JSX.Element {
           />
           <Divider />
           <SettingRow
+            label="Detection Profile"
+            description="Gym, Driving, Sleep — tune fall & distress sensitivity"
+            right={<ChevronRight color={theme.colors.onSurfaceVariant} />}
+            onPress={() => navigation.navigate('SensitivityProfiles')}
+          />
+          <Divider />
+          <SettingRow
             label="Duress PIN"
             description="A fake PIN that silently triggers SOS"
             right={<ChevronRight color={theme.colors.onSurfaceVariant} />}
@@ -100,10 +107,10 @@ export default function SettingsHomeScreen(): React.JSX.Element {
         <Text style={styles.sectionLabel}>PRIVACY & DATA</Text>
         <View style={[styles.group, { backgroundColor: theme.colors.surface }]}>
           <SettingRow
-            label="Export Evidence"
-            description="Export encrypted evidence files"
+            label="Evidence Log"
+            description="View, add notes, and export on-device evidence"
             right={<ChevronRight color={theme.colors.onSurfaceVariant} />}
-            onPress={() => { /* Phase 5: evidence export flow */ }}
+            onPress={() => navigation.navigate('EvidenceLog')}
           />
           <Divider />
           <SettingRow
@@ -160,7 +167,7 @@ function SettingRow({
         <Text style={[rowStyles.label, { color: labelColor ?? theme.colors.onSurface }]}>
           {label}
         </Text>
-        {description != null && (
+        {description !== null && description !== undefined && (
           <Text style={[rowStyles.description, { color: theme.colors.onSurfaceVariant }]}>
             {description}
           </Text>

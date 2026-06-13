@@ -57,9 +57,8 @@ export default function DecoyModeScreen(): React.JSX.Element {
         {
           text: 'Move to Decoy',
           style: 'destructive',
-          onPress: async () => {
-            await repo.update(guardian.id, { isDecoy: true });
-            void load();
+          onPress: (): void => {
+            void repo.update(guardian.id, { isDecoy: true }).then(() => { void load(); });
           },
         },
       ],
@@ -74,9 +73,8 @@ export default function DecoyModeScreen(): React.JSX.Element {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Move to Real List',
-          onPress: async () => {
-            await repo.update(guardian.id, { isDecoy: false });
-            void load();
+          onPress: (): void => {
+            void repo.update(guardian.id, { isDecoy: false }).then(() => { void load(); });
           },
         },
       ],

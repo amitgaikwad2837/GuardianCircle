@@ -26,7 +26,7 @@ export default function AppIconPickerScreen(): React.JSX.Element {
   const [saving, setSaving]     = useState(false);
 
   const handleSelect = (variant: AppIconVariant): void => {
-    if (variant === selected) return;
+    if (variant === selected) {return;}
 
     Alert.alert(
       'Change App Icon',
@@ -35,16 +35,12 @@ export default function AppIconPickerScreen(): React.JSX.Element {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Change',
-          onPress: async () => {
+          onPress: (): void => {
             setSaving(true);
-            try {
-              await AppIconService.setVariant(variant);
-              setSelected(variant);
-            } catch {
-              Alert.alert('Error', 'Could not change the app icon. Please try again.');
-            } finally {
-              setSaving(false);
-            }
+            void AppIconService.setVariant(variant)
+              .then(() => { setSelected(variant); })
+              .catch(() => { Alert.alert('Error', 'Could not change the app icon. Please try again.'); })
+              .finally(() => { setSaving(false); });
           },
         },
       ],

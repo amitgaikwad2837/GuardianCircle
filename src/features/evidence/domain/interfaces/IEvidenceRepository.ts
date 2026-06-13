@@ -1,4 +1,4 @@
-import type { Evidence, EvidenceType } from '../entities/Evidence';
+import type { Evidence } from '../entities/Evidence';
 
 export interface IEvidenceRepository {
   save(input: Omit<Evidence, 'id' | 'createdAt'>): Promise<Evidence>;

@@ -58,7 +58,7 @@ export class TriggerSOSUseCase {
     );
 
     const anyDelivered = dispatchResults.some((r) => {
-      if (r.status !== 'fulfilled') return false;
+      if (r.status !== 'fulfilled') {return false;}
       const { smsResult, pushResult } = r.value;
       return (
         (smsResult.status === 'fulfilled' && smsResult.value === 'sent') ||

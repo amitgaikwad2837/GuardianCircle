@@ -11,7 +11,7 @@ import { colors, spacing, typography } from '@core/theme/tokens';
 type Nav = NativeStackNavigationProp<OnboardingStackParams, 'FirstGuardian'>;
 
 export default function FirstGuardianScreen(): React.JSX.Element {
-  const navigation = useNavigation<Nav>();
+  const _navigation = useNavigation<Nav>();
 
   const completeOnboarding = (): void => {
     PreferencesStore.setBoolean(PREF_KEYS.ONBOARDING_COMPLETE, true);
@@ -38,7 +38,7 @@ export default function FirstGuardianScreen(): React.JSX.Element {
             minHeight={56}
             style={styles.method}
           >
-            👥  Choose from contacts
+            <Text>{'👥  Choose from contacts'}</Text>
           </AccessibleButton>
 
           <AccessibleButton
@@ -48,7 +48,7 @@ export default function FirstGuardianScreen(): React.JSX.Element {
             minHeight={56}
             style={styles.method}
           >
-            ✏️  Enter a phone number
+            <Text>{'✏️  Enter a phone number'}</Text>
           </AccessibleButton>
 
           <AccessibleButton
@@ -58,7 +58,7 @@ export default function FirstGuardianScreen(): React.JSX.Element {
             minHeight={48}
             style={styles.method}
           >
-            📷  Scan their QR code
+            <Text>{'📷  Scan their QR code'}</Text>
           </AccessibleButton>
         </View>
 
@@ -70,7 +70,7 @@ export default function FirstGuardianScreen(): React.JSX.Element {
           minHeight={48}
           style={styles.skip}
         >
-          I'll add a guardian later
+          <Text>{"I'll add a guardian later"}</Text>
         </AccessibleButton>
 
         <Text style={styles.skipWarning}>

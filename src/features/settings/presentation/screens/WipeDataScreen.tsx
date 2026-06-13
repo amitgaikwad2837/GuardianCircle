@@ -46,8 +46,8 @@ export default function WipeDataScreen(): React.JSX.Element {
 
   const confirmed = phrase.trim() === CONFIRM_PHRASE;
 
-  const wipeAll = async (): Promise<void> => {
-    if (!confirmed) return;
+  const wipeAll = (): void => {
+    if (!confirmed) {return;}
 
     Alert.alert(
       'Final Confirmation',
@@ -57,7 +57,7 @@ export default function WipeDataScreen(): React.JSX.Element {
         {
           text: 'Wipe Everything',
           style: 'destructive',
-          onPress: async () => {
+          onPress: (): void => { void (async () => {
             setWiping(true);
             try {
               // 1. Clear MMKV preferences (non-sensitive app state)
@@ -95,7 +95,7 @@ export default function WipeDataScreen(): React.JSX.Element {
                 `Most data has been cleared. ${msg}\n\nUninstalling the app will remove any remaining data.`,
               );
             }
-          },
+          })(); },
         },
       ],
     );

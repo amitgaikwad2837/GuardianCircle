@@ -15,7 +15,7 @@ export class EscalateAlertUseCase {
 
   async execute(incidentId: string, toLevel: EscalationLevel): Promise<void> {
     const incident = await this.sosRepo.getIncidentById(incidentId);
-    if (!incident || incident.status !== 'active') return;
+    if (!incident || incident.status !== 'active') {return;}
 
     await this.sosRepo.updateIncident(incidentId, { escalationLevel: toLevel });
 
@@ -38,7 +38,7 @@ export class EscalateAlertUseCase {
     // Level 2+: call priority-2, send location update SMS to all
     if (toLevel >= 2) {
       const priority2 = guardians.find((g) => g.notificationPriority === 2);
-      if (priority2) await this.dispatcher.dispatchCall(priority2);
+      if (priority2) {await this.dispatcher.dispatchCall(priority2);}
 
       await Promise.allSettled(
         guardians.map((g) =>

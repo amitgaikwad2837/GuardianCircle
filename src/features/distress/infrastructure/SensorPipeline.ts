@@ -1,9 +1,9 @@
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules, type NativeModule } from 'react-native';
 import type { DistressSignal } from '@core/events/EventTypes';
 import { EventBus } from '@core/events/EventBus';
 import { v4 as uuid } from 'uuid';
 import { ConfidenceScoringUseCase } from '../application/ConfidenceScoringUseCase';
-import { SQLiteDistressRepository } from './SQLiteDistressRepository';
+import type { SQLiteDistressRepository } from './SQLiteDistressRepository';
 import { Container, DI_TOKENS } from '@core/di/Container';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import type { SensitivityLevel } from '../domain/entities/DistressEvent';
@@ -31,19 +31,19 @@ class SensorPipelineClass {
   private isRunning = false;
 
   start(): void {
-    if (this.isRunning) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.emitter = new NativeEventEmitter(NativeModules.SensorModule as any);
-    NativeModules.SensorModule?.startListening(SAMPLE_RATE_HZ);
+    if (this.isRunning) {return;}
+
+    this.emitter = new NativeEventEmitter(NativeModules.SensorModule as NativeModule);
+    (NativeModules.SensorModule as { startListening?: (rate: number) => void } | undefined)?.startListening(SAMPLE_RATE_HZ);
     this.accelSub = this.emitter.addListener('GC_ACCELEROMETER_DATA', this.onSample);
     this.isRunning = true;
     Logger.info(TAG, 'Pipeline started');
   }
 
   stop(): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     this.accelSub?.remove();
-    NativeModules.SensorModule?.stopListening();
+    (NativeModules.SensorModule as { stopListening?: () => void } | undefined)?.stopListening();
     this.window = [];
     this.isRunning = false;
     Logger.info(TAG, 'Pipeline stopped');
@@ -56,8 +56,8 @@ class SensorPipelineClass {
     this.window = this.window.filter((s) => now - s.timestamp <= WINDOW_MS);
     this.window.push(sample);
 
-    if (this.window.length < 10) return; // need enough samples
-    if (now < this.cooldownUntil) return; // suppress after an alert
+    if (this.window.length < 10) {return;} // need enough samples
+    if (now < this.cooldownUntil) {return;} // suppress after an alert
 
     const signals = this.extractSignals(now);
     const confidence = scorer.compute(signals);

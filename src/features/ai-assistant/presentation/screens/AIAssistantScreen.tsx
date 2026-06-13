@@ -14,7 +14,7 @@ import type { SettingsStackParams } from '@core/navigation/NavigationTypes';
 
 type Nav = NativeStackNavigationProp<SettingsStackParams>;
 
-const SYSTEM_PROMPT = `You are a personal safety assistant integrated into GuardianCircle, a privacy-first safety app. Help users with safety planning, understanding their app features, and general well-being advice. Never encourage illegal activities. If the user indicates they are in immediate danger, remind them to press the SOS button.`;
+const SYSTEM_PROMPT = 'You are a personal safety assistant integrated into GuardianCircle, a privacy-first safety app. Help users with safety planning, understanding their app features, and general well-being advice. Never encourage illegal activities. If the user indicates they are in immediate danger, remind them to press the SOS button.';
 
 interface Message extends ChatMessage {
   id: string;
@@ -34,7 +34,7 @@ export default function AIAssistantScreen(): React.JSX.Element {
 
   const handleSend = async (): Promise<void> => {
     const text = input.trim();
-    if (!text || isBusy) return;
+    if (!text || isBusy) {return;}
     setInput('');
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
@@ -115,7 +115,7 @@ export default function AIAssistantScreen(): React.JSX.Element {
       <FlatList
         ref={listRef}
         data={messages}
-        keyExtractor={(m) => m.id}
+        keyExtractor={(m: Message) => m.id}
         contentContainerStyle={styles.messages}
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -127,7 +127,7 @@ export default function AIAssistantScreen(): React.JSX.Element {
             </Text>
           </View>
         }
-        renderItem={({ item }) => (
+        renderItem={({ item }: { item: Message }) => (
           <View style={[
             styles.bubble,
             item.role === 'user'
@@ -163,12 +163,12 @@ export default function AIAssistantScreen(): React.JSX.Element {
             multiline
             returnKeyType="send"
             blurOnSubmit
-            onSubmitEditing={handleSend}
+            onSubmitEditing={() => { void handleSend(); }}
             accessibilityLabel="Message input"
           />
           <TouchableOpacity
             style={[styles.sendBtn, { backgroundColor: theme.colors.primary }, (isBusy || !input.trim()) && { opacity: 0.4 }]}
-            onPress={handleSend}
+            onPress={() => { void handleSend(); }}
             disabled={isBusy || !input.trim()}
             accessibilityRole="button"
             accessibilityLabel="Send message"

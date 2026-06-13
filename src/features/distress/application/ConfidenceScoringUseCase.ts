@@ -11,7 +11,7 @@ const SENSITIVITY_MULTIPLIERS: Record<SensitivityLevel, number> = {
 
 export class ConfidenceScoringUseCase {
   compute(signals: DistressSignal[]): number {
-    if (signals.length === 0) return 0;
+    if (signals.length === 0) {return 0;}
 
     const weightedSum = signals.reduce((sum, s) => sum + s.value * s.weight, 0);
     const totalWeight = signals.reduce((sum, s) => sum + s.weight, 0);

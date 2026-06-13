@@ -35,7 +35,7 @@ function rowToGuardian(row: GuardianRow): Guardian {
     signingPublicKey: row.signing_public_key ?? undefined,
     encryptionPublicKey: row.encryption_public_key ?? undefined,
     fcmToken: row.fcm_token ?? undefined,
-    fcmTokenUpdatedAt: row.fcm_token_updated_at != null
+    fcmTokenUpdatedAt: row.fcm_token_updated_at !== null && row.fcm_token_updated_at !== undefined
       ? new Date(row.fcm_token_updated_at)
       : undefined,
     trustLevel: row.trust_level as TrustLevel,
@@ -43,9 +43,9 @@ function rowToGuardian(row: GuardianRow): Guardian {
     isActive: row.is_active === 1,
     isDecoy: row.is_decoy === 1,
     addedAt: new Date(row.added_at),
-    lastAlertAt: row.last_alert_at != null ? new Date(row.last_alert_at) : undefined,
+    lastAlertAt: row.last_alert_at !== null && row.last_alert_at !== undefined ? new Date(row.last_alert_at) : undefined,
     notes: row.notes ?? undefined,
-    removalScheduledAt: row.removal_scheduled_at != null
+    removalScheduledAt: row.removal_scheduled_at !== null && row.removal_scheduled_at !== undefined
       ? new Date(row.removal_scheduled_at)
       : undefined,
     createdAt: new Date(row.created_at),
@@ -61,7 +61,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
       const result = this.db.execute(
         'SELECT phone_number FROM guardians WHERE is_active = 1 AND is_decoy = 0',
       );
-      const phones = ((result as any).rows._array as Array<{ phone_number: string }>)
+      const phones = (result as { rows: { _array: Array<{ phone_number: string }> } }).rows._array
         .map((r) => r.phone_number);
       SOSFallback.setGuardianPhones(phones);
     } catch (err) {
@@ -69,36 +69,36 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     }
   }
 
-  async getAll(): Promise<Guardian[]> {
+  getAll(): Promise<Guardian[]> {
     const result = this.db.execute(
       'SELECT * FROM guardians ORDER BY notification_priority ASC',
     );
-    return ((result as any).rows._array as GuardianRow[]).map(rowToGuardian);
+    return Promise.resolve((result as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
   }
 
-  async getActiveGuardians(): Promise<Guardian[]> {
+  getActiveGuardians(): Promise<Guardian[]> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE is_active = 1 AND is_decoy = 0 ORDER BY notification_priority ASC',
     );
-    return ((result as any).rows._array as GuardianRow[]).map(rowToGuardian);
+    return Promise.resolve((result as { rows: { _array: GuardianRow[] } }).rows._array.map(rowToGuardian));
   }
 
-  async getById(id: string): Promise<Guardian | null> {
+  getById(id: string): Promise<Guardian | null> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE id = ? LIMIT 1',
       [id],
     );
-    const row = ((result as any).rows._array as GuardianRow[])[0];
-    return row != null ? rowToGuardian(row) : null;
+    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
-  async findBySigningKey(signingPublicKey: string): Promise<Guardian | null> {
+  findBySigningKey(signingPublicKey: string): Promise<Guardian | null> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE signing_public_key = ? LIMIT 1',
       [signingPublicKey],
     );
-    const row = ((result as any).rows._array as GuardianRow[])[0];
-    return row != null ? rowToGuardian(row) : null;
+    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
   /** @deprecated Use findBySigningKey — retained for legacy v1-paired guardians. */
@@ -106,13 +106,13 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     return this.findBySigningKey(publicKey);
   }
 
-  async findByPhone(phoneNumber: string): Promise<Guardian | null> {
+  findByPhone(phoneNumber: string): Promise<Guardian | null> {
     const result = this.db.execute(
       'SELECT * FROM guardians WHERE phone_number = ? LIMIT 1',
       [phoneNumber],
     );
-    const row = ((result as any).rows._array as GuardianRow[])[0];
-    return row != null ? rowToGuardian(row) : null;
+    const row = (result as { rows: { _array: GuardianRow[] } }).rows._array[0];
+    return Promise.resolve(row !== null && row !== undefined ? rowToGuardian(row) : null);
   }
 
   async create(
@@ -122,7 +122,7 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     const now = Date.now();
     Logger.debug(TAG, 'create guardian', { id });
 
-    this.db.execute(
+    void this.db.execute(
       `INSERT INTO guardians
          (id, display_name, phone_number,
           signing_public_key, encryption_public_key,
@@ -153,18 +153,17 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     );
 
     const created = await this.getById(id);
-    if (!created) throw new Error(`Failed to read guardian after create: ${id}`);
+    if (!created) {throw new Error(`Failed to read guardian after create: ${id}`);}
     this.syncFallbackPhones();
     return created;
   }
 
-  async update(id: string, update: Partial<Guardian>): Promise<void> {
+  update(id: string, update: Partial<Guardian>): Promise<void> {
     Logger.debug(TAG, 'update guardian', { id });
     const now = Date.now();
 
     const sets: string[] = ['updated_at = ?'];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const values: any[] = [now];
+    const values: unknown[] = [now];
 
     if (update.displayName !== undefined)        { sets.push('display_name = ?');         values.push(update.displayName); }
     if (update.phoneNumber !== undefined)         { sets.push('phone_number = ?');          values.push(update.phoneNumber); }
@@ -181,14 +180,16 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     if (update.removalScheduledAt !== undefined)  { sets.push('removal_scheduled_at = ?'); values.push(update.removalScheduledAt?.getTime() ?? null); }
 
     values.push(id);
-    this.db.execute(`UPDATE guardians SET ${sets.join(', ')} WHERE id = ?`, values);
+    void this.db.execute(`UPDATE guardians SET ${sets.join(', ')} WHERE id = ?`, values);
     this.syncFallbackPhones();
+    return Promise.resolve();
   }
 
-  async delete(id: string): Promise<void> {
+  delete(id: string): Promise<void> {
     Logger.debug(TAG, 'delete guardian', { id });
-    this.db.execute('DELETE FROM guardians WHERE id = ?', [id]);
+    void this.db.execute('DELETE FROM guardians WHERE id = ?', [id]);
     this.syncFallbackPhones();
+    return Promise.resolve();
   }
 
   async scheduleRemoval(id: string, delayMs: number): Promise<void> {
@@ -197,22 +198,22 @@ export class SQLiteGuardianRepository implements IGuardianRepository {
     await this.update(id, { removalScheduledAt: new Date(scheduledAt) });
   }
 
-  async count(): Promise<number> {
+  count(): Promise<number> {
     const result = this.db.execute(
       'SELECT COUNT(*) as cnt FROM guardians WHERE is_active = 1 AND is_decoy = 0',
     );
-    const rows = (result as any).rows._array as [{ cnt: number }];
-    return rows[0]?.cnt ?? 0;
+    const rows = (result as { rows: { _array: [{ cnt: number }] } }).rows._array;
+    return Promise.resolve(rows[0]?.cnt ?? 0);
   }
 
-  async pruneScheduledRemovals(): Promise<number> {
+  pruneScheduledRemovals(): Promise<number> {
     const now = Date.now();
     const result = this.db.execute(
       'DELETE FROM guardians WHERE removal_scheduled_at IS NOT NULL AND removal_scheduled_at <= ?',
       [now],
     );
-    const deleted = (result as any).rowsAffected ?? 0;
-    if (deleted > 0) Logger.info(TAG, 'pruneScheduledRemovals', { deleted });
-    return deleted;
+    const deleted = (result as { rowsAffected?: number }).rowsAffected ?? 0;
+    if (deleted > 0) {Logger.info(TAG, 'pruneScheduledRemovals', { deleted });}
+    return Promise.resolve(deleted);
   }
 }

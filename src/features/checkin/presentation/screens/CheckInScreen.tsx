@@ -27,7 +27,7 @@ export default function CheckInScreen(): React.JSX.Element {
   const route  = useRoute<Route>();
   const { checkinId } = route.params;
 
-  const { addCheckIn, updateCheckIn, removeCheckIn } = useCheckInStore();
+  const { addCheckIn, updateCheckIn } = useCheckInStore();
 
   const [existing, setExisting] = useState<CheckIn | null>(null);
   const [label, setLabel]       = useState('');
@@ -51,7 +51,7 @@ export default function CheckInScreen(): React.JSX.Element {
   }, [checkinId]);
 
   const handleComplete = async (): Promise<void> => {
-    if (!checkinId) return;
+    if (!checkinId) {return;}
     setIsBusy(true);
     try {
       await new CompleteCheckInUseCase().execute(checkinId);
@@ -72,8 +72,8 @@ export default function CheckInScreen(): React.JSX.Element {
     }
     const [h, m] = time.split(':').map(Number);
     const d = new Date();
-    d.setHours(h!, m!, 0, 0);
-    if (d < new Date()) d.setDate(d.getDate() + 1);
+    d.setHours(h!, m, 0, 0);
+    if (d < new Date()) {d.setDate(d.getDate() + 1);}
 
     setIsBusy(true);
     try {
@@ -140,7 +140,7 @@ export default function CheckInScreen(): React.JSX.Element {
             {(existing.status === 'pending' || existing.status === 'escalated') && (
               <TouchableOpacity
                 style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, marginTop: 24 }, isBusy && { opacity: 0.6 }]}
-                onPress={handleComplete}
+                onPress={() => { void handleComplete(); }}
                 disabled={isBusy}
                 accessibilityRole="button"
                 accessibilityLabel="Mark as completed"
@@ -197,7 +197,7 @@ export default function CheckInScreen(): React.JSX.Element {
 
             <TouchableOpacity
               style={[styles.primaryBtn, { backgroundColor: theme.colors.primary, marginTop: 24 }, isBusy && { opacity: 0.6 }]}
-              onPress={handleSchedule}
+              onPress={() => { void handleSchedule(); }}
               disabled={isBusy}
               accessibilityRole="button"
               accessibilityLabel="Schedule check-in"

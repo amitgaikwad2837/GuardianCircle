@@ -42,7 +42,7 @@ interface AppIconNativeModule {
 }
 
 function getNativeModule(): AppIconNativeModule | null {
-  if (Platform.OS !== 'android') return null;
+  if (Platform.OS !== 'android') {return null;}
   const mod = NativeModules.AppIconModule as AppIconNativeModule | undefined;
   if (!mod) {
     Logger.warn(TAG, 'AppIconModule not available — icon switching disabled');
@@ -59,7 +59,7 @@ export const AppIconService = {
 
   async setVariant(variant: AppIconVariant): Promise<void> {
     const mod = getNativeModule();
-    if (!mod) return;
+    if (!mod) {return;}
 
     const alias = ALIAS_MAP[variant];
     try {

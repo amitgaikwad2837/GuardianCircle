@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
+import type {
+  ListRenderItemInfo} from 'react-native';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  ListRenderItemInfo,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';

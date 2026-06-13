@@ -1,4 +1,4 @@
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules, type NativeModule } from 'react-native';
 import { v4 as uuid } from 'uuid';
 import { EventBus } from '@core/events/EventBus';
 import { CRASH_CONFIDENCE_THRESHOLD } from '../domain/entities/CrashEvent';
@@ -33,16 +33,16 @@ class VehicleCrashDetectionUseCaseClass {
   private static readonly COOLDOWN_MS = 180_000;
 
   start(): void {
-    if (this.isRunning) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.emitter  = new NativeEventEmitter(NativeModules.SensorModule as any);
+    if (this.isRunning) {return;}
+
+    this.emitter  = new NativeEventEmitter(NativeModules.SensorModule as NativeModule);
     this.accelSub = this.emitter.addListener('GC_ACCELEROMETER_DATA', this.onSample);
     this.isRunning = true;
     Logger.info(TAG, 'Vehicle crash detection started');
   }
 
   stop(): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     this.accelSub?.remove();
     this.phase = 'idle';
     this.isRunning = false;
@@ -51,7 +51,7 @@ class VehicleCrashDetectionUseCaseClass {
 
   /** Call this whenever a GPS location update arrives (e.g. from LocationService). */
   updateSpeed(location: Coordinates): void {
-    if (!this.isRunning) return;
+    if (!this.isRunning) {return;}
     const speedMs = location.speed ?? 0;
     if (this.phase === 'idle' && speedMs >= MIN_SPEED_FOR_CRASH_MS) {
       this.phase = 'moving';
@@ -65,7 +65,7 @@ class VehicleCrashDetectionUseCaseClass {
     // Use wall clock for cooldown — sensor timestamps use boot-time nanoseconds,
     // not Unix epoch milliseconds, and must not be compared to Date.now().
     const wallNow = Date.now();
-    if (wallNow - this.lastDetectionWall < VehicleCrashDetectionUseCaseClass.COOLDOWN_MS) return;
+    if (wallNow - this.lastDetectionWall < VehicleCrashDetectionUseCaseClass.COOLDOWN_MS) {return;}
 
     const mag = Math.sqrt(sample.x ** 2 + sample.y ** 2 + sample.z ** 2) / 9.81;
 

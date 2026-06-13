@@ -5,13 +5,9 @@ import { EncryptionService } from '@core/crypto/EncryptionService';
 import { IdentityManager } from '@core/crypto/IdentityManager';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { Logger } from '@core/logger/Logger';
-import { NativeModules, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
 const TAG = 'AlertDispatcher';
-
-interface NativePhoneModule {
-  call(phoneNumber: string): Promise<void>;
-}
 
 export class AlertDispatcher implements IAlertDispatcher {
   async dispatchSMS(
@@ -65,7 +61,7 @@ export class AlertDispatcher implements IAlertDispatcher {
     guardian: Guardian,
     payload: AlertPayload,
   ): Promise<'sent' | 'no_token' | 'failed'> {
-    if (!guardian.fcmToken) return 'no_token';
+    if (!guardian.fcmToken) {return 'no_token';}
     if (!guardian.encryptionPublicKey) {
       // Push without E2E encryption is not permitted — relay requires encrypted payload.
       // Guardian receives SMS only until they pair via QR (Level 2 trust).

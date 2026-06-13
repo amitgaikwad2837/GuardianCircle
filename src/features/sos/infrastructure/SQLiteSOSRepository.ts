@@ -40,7 +40,7 @@ function rowToEvent(row: IncidentRow): SOSEvent {
     type: row.type as TriggerMethod,
     status: row.status as SOSStatus,
     triggeredAt: new Date(row.triggered_at),
-    resolvedAt: row.resolved_at != null ? new Date(row.resolved_at) : undefined,
+    resolvedAt: row.resolved_at !== null && row.resolved_at !== undefined ? new Date(row.resolved_at) : undefined,
     escalationLevel: row.escalation_level as EscalationLevel,
     location,
     isSilent: row.is_silent === 1,
@@ -55,10 +55,10 @@ function rowToEvent(row: IncidentRow): SOSEvent {
 export class SQLiteSOSRepository implements ISOSRepository {
   constructor(private readonly db: DB) {}
 
-  async createIncident(event: SOSEvent): Promise<void> {
+  createIncident(event: SOSEvent): Promise<void> {
     Logger.debug(TAG, 'createIncident', { id: event.id });
     const now = Date.now();
-    this.db.execute(
+    return Promise.resolve(this.db.execute(
       `INSERT INTO incidents
          (id, type, status, triggered_at, escalation_level,
           location_lat, location_lng, location_accuracy,
@@ -77,15 +77,14 @@ export class SQLiteSOSRepository implements ISOSRepository {
         event.isDuress ? 1 : 0,
         now,
       ],
-    );
+    )).then(() => {});
   }
 
-  async updateIncident(id: string, update: Partial<SOSEvent>): Promise<void> {
+  updateIncident(id: string, update: Partial<SOSEvent>): Promise<void> {
     Logger.debug(TAG, 'updateIncident', { id });
 
     const sets: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const values: any[] = [];
+      const values: unknown[] = [];
 
     if (update.status !== undefined) {
       sets.push('status = ?');
@@ -112,51 +111,51 @@ export class SQLiteSOSRepository implements ISOSRepository {
       );
     }
 
-    if (sets.length === 0) return;
+    if (sets.length === 0) {return Promise.resolve();}
 
     values.push(id);
-    this.db.execute(
+    return Promise.resolve(this.db.execute(
       `UPDATE incidents SET ${sets.join(', ')} WHERE id = ?`,
       values,
-    );
+    )).then(() => {});
   }
 
-  async getActiveIncident(): Promise<SOSEvent | null> {
+  getActiveIncident(): Promise<SOSEvent | null> {
     const result = this.db.execute(
-      `SELECT * FROM incidents WHERE status = 'active' ORDER BY triggered_at DESC LIMIT 1`,
+      'SELECT * FROM incidents WHERE status = \'active\' ORDER BY triggered_at DESC LIMIT 1',
     );
-    const rows = (result as any).rows._array as IncidentRow[];
+    const rows = (result as { rows: { _array: IncidentRow[] } }).rows._array;
     const row = rows[0];
-    return row != null ? rowToEvent(row) : null;
+    return Promise.resolve(row !== null && row !== undefined ? rowToEvent(row) : null);
   }
 
-  async getIncidentById(id: string): Promise<SOSEvent | null> {
+  getIncidentById(id: string): Promise<SOSEvent | null> {
     const result = this.db.execute(
       'SELECT * FROM incidents WHERE id = ? LIMIT 1',
       [id],
     );
-    const rows = (result as any).rows._array as IncidentRow[];
+    const rows = (result as { rows: { _array: IncidentRow[] } }).rows._array;
     const row = rows[0];
-    return row != null ? rowToEvent(row) : null;
+    return Promise.resolve(row !== null && row !== undefined ? rowToEvent(row) : null);
   }
 
-  async getIncidentHistory(limit = 50): Promise<SOSEvent[]> {
+  getIncidentHistory(limit = 50): Promise<SOSEvent[]> {
     const result = this.db.execute(
       'SELECT * FROM incidents ORDER BY triggered_at DESC LIMIT ?',
       [limit],
     );
-    return ((result as any).rows._array as IncidentRow[]).map(rowToEvent);
+    return Promise.resolve((result as { rows: { _array: IncidentRow[] } }).rows._array.map(rowToEvent));
   }
 
   /** Records which guardian was alerted and via which method. */
-  async recordAlert(params: {
+  recordAlert(params: {
     incidentId: string;
     guardianId: string;
     method: 'sms' | 'push' | 'call';
     smsContent?: string;
     escalationLevel: EscalationLevel;
   }): Promise<void> {
-    this.db.execute(
+    return Promise.resolve(this.db.execute(
       `INSERT INTO incident_alerts
          (id, incident_id, guardian_id, alert_method, sent_at, sms_content, escalation_level)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -169,6 +168,6 @@ export class SQLiteSOSRepository implements ISOSRepository {
         params.smsContent ?? null,
         params.escalationLevel,
       ],
-    );
+    )).then(() => {});
   }
 }

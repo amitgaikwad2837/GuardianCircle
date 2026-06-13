@@ -12,6 +12,7 @@ import {
   Linking,
   NativeEventEmitter,
   NativeModules,
+  type NativeModule,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
@@ -55,8 +56,8 @@ export default function HomeScreen(): React.JSX.Element {
 
   // Volume-button hardware SOS trigger (Vol-Down + Vol-Up held 3 s)
   useEffect(() => {
-    if (!NativeModules.BackgroundTaskModule) return;
-    const emitter = new NativeEventEmitter(NativeModules.BackgroundTaskModule);
+    if (!NativeModules.BackgroundTaskModule) {return;}
+    const emitter = new NativeEventEmitter(NativeModules.BackgroundTaskModule as NativeModule);
     const sub = emitter.addListener('GC_VOLUME_SOS_TRIGGER', () => {
       Logger.info(TAG, 'Volume SOS trigger received');
       if (store.status === 'idle' || store.status === 'cancelled' || store.status === 'resolved') {
@@ -91,14 +92,14 @@ export default function HomeScreen(): React.JSX.Element {
     }
   }, [store.status]);
 
-  const clearHoldTimer = (): void => {
+  const clearHoldTimer = useCallback((): void => {
     if (holdTimerRef.current) {
       clearTimeout(holdTimerRef.current);
       holdTimerRef.current = null;
     }
     holdAnimation.current?.stop();
     holdProgress.setValue(0);
-  };
+  }, [holdProgress]);
 
   const clearCancelTicker = (): void => {
     if (cancelTickRef.current) {
@@ -162,7 +163,7 @@ export default function HomeScreen(): React.JSX.Element {
   }, [actions, store]);
 
   const onHoldStart = useCallback((isSilent: boolean): void => {
-    if (store.status !== 'idle' && store.status !== 'cancelled' && store.status !== 'resolved') return;
+    if (store.status !== 'idle' && store.status !== 'cancelled' && store.status !== 'resolved') {return;}
 
     store.reset();
     Vibration.vibrate(VIBRATE_HOLD_START);
@@ -189,7 +190,7 @@ export default function HomeScreen(): React.JSX.Element {
     if (store.status === 'idle' || store.status === 'cancelled' || store.status === 'resolved') {
       clearHoldTimer();
     }
-  }, [store.status]);
+  }, [store.status, clearHoldTimer]);
 
   const handleCancelSOS = useCallback((): void => {
     clearCancelTicker();
@@ -205,7 +206,7 @@ export default function HomeScreen(): React.JSX.Element {
         AccessibilityInfo.announceForAccessibility('Emergency alert cancelled.');
       });
     }
-  }, [store, actions]);
+  }, [store, actions, clearHoldTimer]);
 
   const styles = makeStyles(theme);
 

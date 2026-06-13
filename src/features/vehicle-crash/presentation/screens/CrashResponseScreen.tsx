@@ -21,7 +21,8 @@ const TAG = 'CrashResponseScreen';
 export default function CrashResponseScreen(): React.JSX.Element {
   const theme   = useTheme();
   const styles  = makeStyles(theme);
-  const { activeCrash, dismissCrash } = useDistressStore();
+  const activeCrash  = useDistressStore((s) => s.activeCrash);
+  const dismissCrash = useDistressStore((s) => (): void => { s.dismissCrash(); });
 
   const [countdown, setCountdown] = useState(CRASH_RESPONSE_TIMEOUT_SECONDS);
   const barAnim       = useRef(new Animated.Value(1)).current;
@@ -65,7 +66,7 @@ export default function CrashResponseScreen(): React.JSX.Element {
   }, []);
 
   const autoTriggerSOS = async (): Promise<void> => {
-    if (isTriggering.current) return;
+    if (isTriggering.current) {return;}
     isTriggering.current = true;
     clearInterval(timerRef.current!);
     Vibration.cancel();
@@ -93,7 +94,7 @@ export default function CrashResponseScreen(): React.JSX.Element {
     dismissCrash();
   };
 
-  if (!activeCrash) return <View style={styles.container} />;
+  if (!activeCrash) {return <View style={styles.container} />;}
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -143,7 +144,7 @@ export default function CrashResponseScreen(): React.JSX.Element {
 
         <TouchableOpacity
           style={[styles.sosBtn, { backgroundColor: theme.colors.danger }]}
-          onPress={autoTriggerSOS}
+          onPress={() => { void autoTriggerSOS(); }}
           accessibilityRole="button"
           accessibilityLabel="Trigger emergency SOS now"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

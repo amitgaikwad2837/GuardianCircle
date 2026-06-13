@@ -5,6 +5,7 @@ import { SmsService } from '@core/sms/SMSService';
 import { Logger } from '@core/logger/Logger';
 import type { IGuardianRepository } from '../domain/interfaces/IGuardianRepository';
 import type { AlertPayload } from '@features/sos/domain/interfaces/IAlertDispatcher';
+import notifeeLib from '@notifee/react-native';
 
 const TAG = 'GuardianNotificationHandler';
 const SOS_CHANNEL_ID = 'gc_sos_alerts';
@@ -14,12 +15,9 @@ const SOS_CHANNEL_ID = 'gc_sos_alerts';
 // but short enough that genuine escalation alerts (every 30–60 s) are never dropped.
 const RATE_LIMIT_MS = 10_000;
 
-let notifee: typeof import('@notifee/react-native').default | null = null;
-try {
-  notifee = require('@notifee/react-native').default as typeof import('@notifee/react-native').default;
-} catch {
-  Logger.warn(TAG, 'notifee not available — install @notifee/react-native for local notifications');
-}
+// notifee is optional — the package must be installed for local push notifications.
+// We keep a nullable reference so the handler degrades gracefully if not available.
+const notifee: typeof notifeeLib | null = notifeeLib ?? null;
 
 interface FCMEnvelope {
   encryptedPayload: string;
@@ -41,7 +39,7 @@ const _unsubs: Unsubscribe[] = [];
 
 export const GuardianNotificationHandler = {
   async initialize(): Promise<void> {
-    if (_initialized) return;
+    if (_initialized) {return;}
     _initialized = true;
 
     await this.ensureNotificationChannel();
@@ -71,9 +69,9 @@ export const GuardianNotificationHandler = {
     }
 
     const envelope: FCMEnvelope = {
-      encryptedPayload: data['encryptedPayload']!,
-      signature:        data['signature']!,
-      senderPublicKey:  data['senderPublicKey']!,
+      encryptedPayload: data.encryptedPayload,
+      signature:        data.signature,
+      senderPublicKey:  data.senderPublicKey,
     };
 
     try {
@@ -176,7 +174,7 @@ export const GuardianNotificationHandler = {
       const guardianRepo = Container.resolve<IGuardianRepository>(DI_TOKENS.IGuardianRepository);
       const active = await guardianRepo.getActiveGuardians();
       const phones = active.map((g) => g.phoneNumber).filter(Boolean);
-      if (phones.length === 0) return;
+      if (phones.length === 0) {return;}
       const msg = `GuardianCircle: contact's notification address updated. No action needed. Token suffix: ${newToken.slice(-6)}`;
       await SmsService.sendBatch(phones, msg);
     } catch (err) {
@@ -187,7 +185,7 @@ export const GuardianNotificationHandler = {
   },
 
   async ensureNotificationChannel(): Promise<void> {
-    if (!notifee) return;
+    if (!notifee) {return;}
     try {
       await notifee.createChannel({
         id: SOS_CHANNEL_ID,

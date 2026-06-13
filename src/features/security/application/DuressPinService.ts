@@ -136,15 +136,16 @@ export const DuressPinService = {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  async enforceRateLimit(): Promise<void> {
+  enforceRateLimit(): Promise<void> {
     const lockedUntil = PreferencesStore.getNumber(PREF_KEYS.PIN_LOCKED_UNTIL) ?? 0;
     if (Date.now() < lockedUntil) {
       const remainingSec = Math.ceil((lockedUntil - Date.now()) / 1000);
-      throw new Error(`Too many failed attempts. Try again in ${remainingSec} seconds.`);
+      return Promise.reject(new Error(`Too many failed attempts. Try again in ${remainingSec} seconds.`));
     }
+    return Promise.resolve();
   },
 
-  async recordFailedAttempt(): Promise<void> {
+  recordFailedAttempt(): Promise<void> {
     const attempts = (PreferencesStore.getNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS) ?? 0) + 1;
     PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, attempts);
     if (attempts >= MAX_ATTEMPTS) {
@@ -154,28 +155,30 @@ export const DuressPinService = {
       PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, Date.now() + lockoutMs);
       Logger.warn(TAG, `PIN locked out for ${lockoutMs / 1000} s after ${attempts} failed attempts`);
     }
+    return Promise.resolve();
   },
 
-  async resetFailedAttempts(): Promise<void> {
+  resetFailedAttempts(): Promise<void> {
     PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 0);
     PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, 0);
+    return Promise.resolve();
   },
 
   async verifyRealPin(pin: string): Promise<boolean> {
     const stored = await SecureStore.get(KEYS.realPinHash);
-    if (!stored) return false;
+    if (!stored) {return false;}
     return DuressPinService.verifyHash(pin, stored);
   },
 
   async verifyDuressPin(pin: string): Promise<boolean> {
     const stored = await SecureStore.get(KEYS.duressPinHash);
-    if (!stored) return false;
+    if (!stored) {return false;}
     return DuressPinService.verifyHash(pin, stored);
   },
 
   async verifyHash(pin: string, saltAndHash: string): Promise<boolean> {
     const [salt, expectedHash] = saltAndHash.split(':');
-    if (!salt || !expectedHash) return false;
+    if (!salt || !expectedHash) {return false;}
     const { hash } = await Crypto.hashPin(pin, salt);
     return hash === expectedHash;
   },

@@ -102,7 +102,7 @@ export default function PermissionsScreen(): React.JSX.Element {
           minHeight={56}
           style={styles.cta}
         >
-          Grant Permissions
+          <Text>Grant Permissions</Text>
         </AccessibleButton>
       </ScrollView>
     </SafeAreaView>

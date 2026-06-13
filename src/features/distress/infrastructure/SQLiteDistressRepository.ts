@@ -64,6 +64,6 @@ export class SQLiteDistressRepository implements IDistressRepository {
       'SELECT * FROM distress_events ORDER BY detected_at DESC LIMIT ?',
       [limit],
     );
-    return ((result as any).rows._array as DistressRow[]).map(rowToEvent);
+    return (result as { rows: { _array: DistressRow[] } }).rows._array.map(rowToEvent);
   }
 }

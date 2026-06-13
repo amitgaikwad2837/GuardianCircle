@@ -1,5 +1,8 @@
 import Geolocation from 'react-native-geolocation-service';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, type Permission } from 'react-native';
+import { Logger } from '@core/logger/Logger';
+
+const TAG = 'LocationService';
 
 export interface Coordinates {
   lat: number;
@@ -25,9 +28,9 @@ class LocationServiceClass {
   private listeners: ((location: Coordinates) => void)[] = [];
 
   async requestPermission(): Promise<boolean> {
-    if (Platform.OS !== 'android') return false;
+    if (Platform.OS !== 'android') {return false;}
     const result = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION as import('react-native').Permission,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION as Permission,
     );
     return result === PermissionsAndroid.RESULTS.GRANTED;
   }
@@ -43,7 +46,7 @@ class LocationServiceClass {
   }
 
   startTracking(mode: LocationMode, onLocation: (loc: Coordinates) => void): void {
-    if (this.watchId !== null) this.stopTracking();
+    if (this.watchId !== null) {this.stopTracking();}
     this.currentMode = mode;
     this.listeners.push(onLocation);
 
@@ -52,7 +55,7 @@ class LocationServiceClass {
         const coords = this.toCoordinates(pos);
         this.listeners.forEach((l) => l(coords));
       },
-      (err) => console.warn('[LocationService] watch error', err),
+      (err) => Logger.warn(TAG, 'watch error', { message: err instanceof Error ? err.message : String(err) }),
       {
         enableHighAccuracy: mode === 'emergency',
         interval: UPDATE_INTERVALS[mode],

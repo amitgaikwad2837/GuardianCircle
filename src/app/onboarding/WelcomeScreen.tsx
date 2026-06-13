@@ -65,7 +65,7 @@ export default function WelcomeScreen(): React.JSX.Element {
             minHeight={56}
             style={styles.cta}
           >
-            Get Started
+            <Text>Get Started</Text>
           </AccessibleButton>
 
           <AccessibleButton
@@ -74,7 +74,7 @@ export default function WelcomeScreen(): React.JSX.Element {
             variant="ghost"
             minHeight={48}
           >
-            Why no account? Learn more
+            <Text>Why no account? Learn more</Text>
           </AccessibleButton>
         </View>
       </ScrollView>

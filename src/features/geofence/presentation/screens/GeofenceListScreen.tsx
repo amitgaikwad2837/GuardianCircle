@@ -41,10 +41,11 @@ export default function GeofenceListScreen(): React.JSX.Element {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: async () => {
+        onPress: (): void => {
           const repo = Container.resolve<IGeofenceRepository>(DI_TOKENS.IGeofenceRepository);
-          await repo.delete(id);
-          setGeofences((prev) => prev.filter((g) => g.id !== id));
+          void repo.delete(id).then(() => {
+            setGeofences((prev) => prev.filter((g) => g.id !== id));
+          });
         },
       },
     ]);
@@ -75,7 +76,7 @@ export default function GeofenceListScreen(): React.JSX.Element {
         data={geofences}
         keyExtractor={(g) => g.id}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} />}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { void load(); }} />}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>

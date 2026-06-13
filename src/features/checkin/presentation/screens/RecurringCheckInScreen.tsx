@@ -43,8 +43,8 @@ export default function RecurringCheckInScreen(): React.JSX.Element {
   const toggleDay = useCallback((idx: number): void => {
     setSelectedDays((prev) => {
       const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
+      if (next.has(idx)) {next.delete(idx);}
+      else {next.add(idx);}
       return next;
     });
   }, []);
@@ -72,7 +72,7 @@ export default function RecurringCheckInScreen(): React.JSX.Element {
       if (selectedDays.has(tryDow)) {
         d.setDate(now.getDate() + offset);
         d.setHours(parseInt(hour, 10), parseInt(minute, 10), 0, 0);
-        if (d > now) return d;
+        if (d > now) {return d;}
       }
     }
     d.setDate(now.getDate() + 1);
@@ -129,7 +129,7 @@ export default function RecurringCheckInScreen(): React.JSX.Element {
           style={[styles.labelInput, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}
           onPress={() => {
             Alert.prompt('Label', 'Name for this check-in', (val) => {
-              if (val !== undefined) setLabel(val);
+              if (val !== undefined) {setLabel(val);}
             }, 'plain-text', label);
           }}
           accessibilityRole="button"
@@ -258,7 +258,7 @@ export default function RecurringCheckInScreen(): React.JSX.Element {
 
         <TouchableOpacity
           style={[styles.saveBtn, { backgroundColor: theme.colors.primary }, isBusy && { opacity: 0.6 }]}
-          onPress={handleSave}
+          onPress={() => { void handleSave(); }}
           disabled={isBusy}
           accessibilityRole="button"
           accessibilityLabel="Save recurring check-in"

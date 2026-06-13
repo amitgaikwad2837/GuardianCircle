@@ -7,11 +7,11 @@ interface JourneyState {
   isLoading: boolean;
   error: string | null;
 
-  setActive(journey: Journey | null): void;
-  setHistory(journeys: Journey[]): void;
-  updateActive(update: Partial<Journey>): void;
-  setLoading(loading: boolean): void;
-  setError(error: string | null): void;
+  setActive: (journey: Journey | null) => void;
+  setHistory: (journeys: Journey[]) => void;
+  updateActive: (update: Partial<Journey>) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 export const useJourneyStore = create<JourneyState>((set) => ({

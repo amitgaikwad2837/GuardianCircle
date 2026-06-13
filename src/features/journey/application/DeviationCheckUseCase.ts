@@ -24,12 +24,12 @@ export class DeviationCheckUseCase {
 
   async execute(journeyId: string, currentLocation: Coordinates): Promise<void> {
     const journey = await this.repo.getById(journeyId);
-    if (!journey || journey.status !== 'active') return;
+    if (!journey || journey.status !== 'active') {return;}
 
     await this.repo.addWaypoint(journeyId, currentLocation);
     EventBus.emit('journey:location_updated', { journeyId, location: currentLocation });
 
-    if (!journey.destinationCoordinates) return;
+    if (!journey.destinationCoordinates) {return;}
 
     // Check overdue
     if (journey.expectedArrivalAt && new Date() > journey.expectedArrivalAt) {

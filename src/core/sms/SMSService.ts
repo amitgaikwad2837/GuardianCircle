@@ -68,7 +68,7 @@ export const SmsService = {
           to: phoneNumber.slice(0, 6) + '****',
           error: err instanceof Error ? err.message.slice(0, 80) : String(err),
         });
-        if (!isLast) await sleep(RETRY_DELAY_MS);
+        if (!isLast) {await sleep(RETRY_DELAY_MS);}
       }
     }
     Logger.error(TAG, 'SMS failed after all retries', {

@@ -17,15 +17,6 @@ interface GeofenceRow {
   created_at: number;
 }
 
-interface GeofenceEventRow {
-  id: string;
-  geofence_id: string;
-  event_type: 'enter' | 'exit';
-  occurred_at: number;
-  lat: number | null;
-  lng: number | null;
-}
-
 function rowToGeofence(row: GeofenceRow): Geofence {
   return {
     id: row.id,
@@ -71,19 +62,19 @@ export class SQLiteGeofenceRepository implements IGeofenceRepository {
 
   async getAll(): Promise<Geofence[]> {
     const result = await this.db.execute('SELECT * FROM geofences ORDER BY created_at DESC');
-    return ((result as any).rows._array as GeofenceRow[]).map(rowToGeofence);
+    return (result as { rows: { _array: GeofenceRow[] } }).rows._array.map(rowToGeofence);
   }
 
   async getActive(): Promise<Geofence[]> {
     const result = await this.db.execute(
       'SELECT * FROM geofences WHERE is_active = 1 ORDER BY created_at DESC',
     );
-    return ((result as any).rows._array as GeofenceRow[]).map(rowToGeofence);
+    return (result as { rows: { _array: GeofenceRow[] } }).rows._array.map(rowToGeofence);
   }
 
   async getById(id: string): Promise<Geofence | null> {
     const result = await this.db.execute('SELECT * FROM geofences WHERE id = ?', [id]);
-    const rows = (result as any).rows._array as GeofenceRow[];
+    const rows = (result as { rows: { _array: GeofenceRow[] } }).rows._array;
     return rows[0] ? rowToGeofence(rows[0]) : null;
   }
 
@@ -99,7 +90,7 @@ export class SQLiteGeofenceRepository implements IGeofenceRepository {
     if (update.guardianIds !== undefined) { setClauses.push('guardian_ids = ?'); params.push(JSON.stringify(update.guardianIds)); }
     if (update.loiteringDelayMs !== undefined) { setClauses.push('loitering_delay_ms = ?'); params.push(update.loiteringDelayMs); }
 
-    if (setClauses.length === 0) return;
+    if (setClauses.length === 0) {return;}
     params.push(id);
     await this.db.execute(`UPDATE geofences SET ${setClauses.join(', ')} WHERE id = ?`, params);
   }

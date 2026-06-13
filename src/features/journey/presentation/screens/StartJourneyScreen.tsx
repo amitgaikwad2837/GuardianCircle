@@ -18,7 +18,7 @@ export default function StartJourneyScreen(): React.JSX.Element {
   const theme = useTheme();
   const styles = makeStyles(theme);
   const navigation = useNavigation<Nav>();
-  const setActive = useJourneyStore((s) => s.setActive);
+  const { setActive } = useJourneyStore();
 
   const [destination, setDestination] = useState('');
   const [arrivalTime, setArrivalTime] = useState('');   // HH:MM
@@ -29,26 +29,26 @@ export default function StartJourneyScreen(): React.JSX.Element {
   const validate = (): boolean => {
     const next: Partial<Record<string, string>> = {};
     if (arrivalTime && !/^\d{1,2}:\d{2}$/.test(arrivalTime)) {
-      next['arrival'] = 'Use HH:MM format (e.g. 21:30)';
+      next.arrival = 'Use HH:MM format (e.g. 21:30)';
     }
     const dev = parseInt(deviation, 10);
     if (isNaN(dev) || dev < 50) {
-      next['deviation'] = 'Minimum 50 metres';
+      next.deviation = 'Minimum 50 metres';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const handleStart = async (): Promise<void> => {
-    if (!validate()) return;
+    if (!validate()) {return;}
     setIsBusy(true);
     try {
       let expectedArrivalAt: Date | undefined;
       if (arrivalTime) {
         const [h, m] = arrivalTime.split(':').map(Number);
         const d = new Date();
-        d.setHours(h!, m!, 0, 0);
-        if (d < new Date()) d.setDate(d.getDate() + 1); // next day if past
+        d.setHours(h!, m, 0, 0);
+        if (d < new Date()) {d.setDate(d.getDate() + 1);} // next day if past
         expectedArrivalAt = d;
       }
 
@@ -99,7 +99,7 @@ export default function StartJourneyScreen(): React.JSX.Element {
           Expected arrival
         </Text>
         <TextInput
-          style={[styles.input, { borderColor: errors['arrival'] ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
+          style={[styles.input, { borderColor: errors.arrival ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
           placeholder="HH:MM (e.g. 21:30) — optional"
           placeholderTextColor={theme.colors.onSurfaceVariant}
           value={arrivalTime}
@@ -108,23 +108,23 @@ export default function StartJourneyScreen(): React.JSX.Element {
           returnKeyType="next"
           accessibilityLabel="Expected arrival time"
         />
-        {errors['arrival'] && (
-          <Text style={[styles.error, { color: theme.colors.danger }]}>{errors['arrival']}</Text>
+        {errors.arrival && (
+          <Text style={[styles.error, { color: theme.colors.danger }]}>{errors.arrival}</Text>
         )}
 
         <Text style={[styles.label, { color: theme.colors.onSurface, marginTop: theme.spacing.md }]}>
           Route deviation alert (metres)
         </Text>
         <TextInput
-          style={[styles.input, { borderColor: errors['deviation'] ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
+          style={[styles.input, { borderColor: errors.deviation ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
           value={deviation}
           onChangeText={setDeviation}
           keyboardType="number-pad"
           returnKeyType="done"
           accessibilityLabel="Deviation threshold in metres"
         />
-        {errors['deviation'] && (
-          <Text style={[styles.error, { color: theme.colors.danger }]}>{errors['deviation']}</Text>
+        {errors.deviation && (
+          <Text style={[styles.error, { color: theme.colors.danger }]}>{errors.deviation}</Text>
         )}
 
         <Text style={[styles.hint, { color: theme.colors.onSurfaceVariant }]}>
@@ -135,7 +135,7 @@ export default function StartJourneyScreen(): React.JSX.Element {
       <View style={[styles.footer, { borderTopColor: theme.colors.divider, backgroundColor: theme.colors.background }]}>
         <TouchableOpacity
           style={[styles.startBtn, { backgroundColor: theme.colors.primary }, isBusy && styles.startBtnDisabled]}
-          onPress={handleStart}
+          onPress={() => { void handleStart(); }}
           disabled={isBusy}
           accessibilityRole="button"
           accessibilityLabel="Start journey"

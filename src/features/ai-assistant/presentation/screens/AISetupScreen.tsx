@@ -90,15 +90,16 @@ export default function AISetupScreen(): React.JSX.Element {
     }
   };
 
-  const handleClear = async (provider: ProviderConfig): Promise<void> => {
+  const handleClear = (provider: ProviderConfig): void => {
     Alert.alert(`Clear ${provider.displayName} key?`, 'You will not be able to use this provider until you add a new key.', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Clear',
         style: 'destructive',
-        onPress: async () => {
-          await provider.instance.clearKey();
-          setConfigured((prev) => ({ ...prev, [provider.type]: false }));
+        onPress: (): void => {
+          void provider.instance.clearKey().then(() => {
+            setConfigured((prev) => ({ ...prev, [provider.type]: false }));
+          });
         },
       },
     ]);
@@ -157,7 +158,7 @@ export default function AISetupScreen(): React.JSX.Element {
             <View style={styles.cardActions}>
               <TouchableOpacity
                 style={[styles.saveBtn, { backgroundColor: theme.colors.primary }, (busy === provider.type || !apiKeys[provider.type].trim()) && { opacity: 0.5 }]}
-                onPress={() => handleSave(provider)}
+                onPress={() => { void handleSave(provider); }}
                 disabled={busy === provider.type || !apiKeys[provider.type].trim()}
                 accessibilityRole="button"
                 accessibilityLabel={`Save ${provider.displayName} key`}

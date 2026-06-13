@@ -5,7 +5,6 @@ let db: DB | null = null;
 let initPromise: Promise<DB> | null = null;
 
 const DB_NAME = 'guardiancircle.db';
-const CURRENT_SCHEMA_VERSION = 6;
 
 /**
  * Manages the SQLCipher-encrypted SQLite database.
@@ -13,9 +12,9 @@ const CURRENT_SCHEMA_VERSION = 6;
  */
 export const DatabaseManager = {
   async initialize(): Promise<DB> {
-    if (db) return db;
+    if (db) {return db;}
     // Prevent concurrent callers from opening the DB and running migrations twice
-    if (initPromise) return initPromise;
+    if (initPromise) {return initPromise;}
     initPromise = this._open();
     try {
       db = await initPromise;
@@ -38,29 +37,28 @@ export const DatabaseManager = {
   },
 
   getDB(): DB {
-    if (!db) throw new Error('DatabaseManager not initialized. Call initialize() first.');
+    if (!db) {throw new Error('DatabaseManager not initialized. Call initialize() first.');}
     return db;
   },
 
   async runMigrations(database: DB): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [{ user_version }] = ((database.execute('PRAGMA user_version') as any).rows._array) as [{ user_version: number }];
+    const [{ user_version }] = (database.execute('PRAGMA user_version') as { rows: { _array: [{ user_version: number }] } }).rows._array;
     let version = user_version ?? 0;
 
     const migrations = await this.loadMigrations();
 
     for (const migration of migrations) {
       if (migration.version > version) {
-        database.execute('BEGIN TRANSACTION');
+        void database.execute('BEGIN TRANSACTION');
         try {
-          database.execute(migration.sql);
-          database.execute('COMMIT');
+          void database.execute(migration.sql);
+          void database.execute('COMMIT');
         } catch (err) {
-          database.execute('ROLLBACK');
+          void database.execute('ROLLBACK');
           throw new Error(`Migration ${migration.version} failed: ${String(err)}`);
         }
         // PRAGMA user_version must be set outside a transaction — it is a no-op inside one
-        database.execute(`PRAGMA user_version = ${migration.version}`);
+        void database.execute(`PRAGMA user_version = ${migration.version}`);
         version = migration.version;
       }
     }
@@ -72,7 +70,7 @@ export const DatabaseManager = {
     return migrations;
   },
 
-  async close(): Promise<void> {
+  close(): void {
     if (db) {
       db.close();
       db = null;

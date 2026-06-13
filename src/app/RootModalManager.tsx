@@ -19,23 +19,24 @@ type FallPayload = { eventId: string; confidence: number; impactMagnitude: numbe
  *   crash:detected     → CrashResponseScreen
  */
 export function RootModalManager(): React.JSX.Element {
-  const { active, activeFall, activeCrash, setActive, setActiveFall, setActiveCrash } =
-    useDistressStore();
+  const active      = useDistressStore((s) => s.active);
+  const activeFall  = useDistressStore((s) => s.activeFall);
+  const activeCrash = useDistressStore((s) => s.activeCrash);
 
   useEffect(() => {
     const onDistress = (payload: { eventId: string; confidence: number; signals: DistressSignal[] }): void => {
-      setActive({ ...payload, detectedAt: Date.now() });
+      useDistressStore.getState().setActive({ ...payload, detectedAt: Date.now() });
     };
 
     const onFall = (payload: FallPayload): void => {
-      if (useDistressStore.getState().active != null) return;
-      setActiveFall(payload);
+      if (useDistressStore.getState().active !== null) {return;}
+      useDistressStore.getState().setActiveFall(payload);
     };
 
     const onCrash = (payload: FallPayload): void => {
-      if (useDistressStore.getState().active != null) return;
-      if (useDistressStore.getState().activeFall != null) return;
-      setActiveCrash(payload);
+      if (useDistressStore.getState().active !== null) {return;}
+      if (useDistressStore.getState().activeFall !== null) {return;}
+      useDistressStore.getState().setActiveCrash(payload);
     };
 
     EventBus.on('distress:detected', onDistress);
@@ -47,11 +48,11 @@ export function RootModalManager(): React.JSX.Element {
       EventBus.off('fall:detected', onFall);
       EventBus.off('crash:detected', onCrash);
     };
-  }, [setActive, setActiveFall, setActiveCrash]);
+  }, []);
 
-  const showDistress = active != null;
-  const showFall     = !showDistress && activeFall != null;
-  const showCrash    = !showDistress && !showFall && activeCrash != null;
+  const showDistress = active !== null && active !== undefined;
+  const showFall     = !showDistress && activeFall !== null && activeFall !== undefined;
+  const showCrash    = !showDistress && !showFall && activeCrash !== null && activeCrash !== undefined;
 
   return (
     <>

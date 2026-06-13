@@ -16,7 +16,7 @@ export const SecureStore = {
 
   async get(key: string): Promise<string | null> {
     const result = await Keychain.getGenericPassword({ service: key });
-    if (!result) return null;
+    if (!result) {return null;}
     return result.password;
   },
 

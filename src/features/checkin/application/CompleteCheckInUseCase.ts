@@ -11,7 +11,7 @@ export class CompleteCheckInUseCase {
 
   async execute(checkinId: string): Promise<void> {
     const checkin = await this.repo.getById(checkinId);
-    if (!checkin) throw new Error(`Check-in ${checkinId} not found.`);
+    if (!checkin) {throw new Error(`Check-in ${checkinId} not found.`);}
     if (checkin.status !== 'pending' && checkin.status !== 'escalated') {
       throw new Error(`Check-in is already ${checkin.status}.`);
     }

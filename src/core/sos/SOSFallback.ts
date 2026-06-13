@@ -37,7 +37,7 @@ export const SOSFallback = {
   getGuardianPhones(): string[] {
     try {
       const raw = storage.getString(FALLBACK_KEY);
-      if (!raw) return [];
+      if (!raw) {return [];}
       return JSON.parse(raw) as string[];
     } catch {
       return [];

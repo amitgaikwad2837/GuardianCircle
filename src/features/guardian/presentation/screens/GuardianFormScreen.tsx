@@ -63,7 +63,7 @@ export default function GuardianFormScreen(): React.JSX.Element {
   }
 
   async function handleSave(): Promise<void> {
-    if (!validate()) return;
+    if (!validate()) {return;}
     setIsSaving(true);
 
     try {

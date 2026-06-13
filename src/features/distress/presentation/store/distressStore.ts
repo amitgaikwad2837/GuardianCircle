@@ -15,12 +15,12 @@ interface DistressState {
   activeFall: FallPayload | null;
   activeCrash: FallPayload | null;
 
-  setActive(distress: ActiveDistress | null): void;
-  setActiveFall(fall: FallPayload | null): void;
-  setActiveCrash(crash: FallPayload | null): void;
-  dismiss(): void;
-  dismissFall(): void;
-  dismissCrash(): void;
+  setActive: (distress: ActiveDistress | null) => void;
+  setActiveFall: (fall: FallPayload | null) => void;
+  setActiveCrash: (crash: FallPayload | null) => void;
+  dismiss: () => void;
+  dismissFall: () => void;
+  dismissCrash: () => void;
 }
 
 export const useDistressStore = create<DistressState>((set) => ({

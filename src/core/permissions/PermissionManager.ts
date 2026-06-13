@@ -26,7 +26,7 @@ const ANDROID_PERMISSIONS: Record<AppPermission, Permission | null> = {
 export const PermissionManager = {
   async request(permission: AppPermission): Promise<boolean> {
     const androidPerm = ANDROID_PERMISSIONS[permission];
-    if (!androidPerm) return true; // handled elsewhere
+    if (!androidPerm) {return true;} // handled elsewhere
 
     const result = await PermissionsAndroid.request(androidPerm);
     return result === PermissionsAndroid.RESULTS.GRANTED;
@@ -34,7 +34,7 @@ export const PermissionManager = {
 
   async check(permission: AppPermission): Promise<boolean> {
     const androidPerm = ANDROID_PERMISSIONS[permission];
-    if (!androidPerm) return true;
+    if (!androidPerm) {return true;}
 
     const result = await PermissionsAndroid.check(androidPerm);
     return result;

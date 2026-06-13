@@ -24,9 +24,12 @@ export default function JourneyDashboardScreen(): React.JSX.Element {
   const styles = makeStyles(theme);
   const navigation = useNavigation<Nav>();
 
-  const { activeJourney, history, isLoading, setActive, setHistory, setLoading } =
-    useJourneyStore();
-  const { pending, setPending } = useCheckInStore();
+  const activeJourney                          = useJourneyStore((s) => s.activeJourney);
+  const history                                = useJourneyStore((s) => s.history);
+  const isLoading                              = useJourneyStore((s) => s.isLoading);
+  const { setActive, setHistory, setLoading }  = useJourneyStore();
+  const pending                                = useCheckInStore((s) => s.pending);
+  const { setPending }                         = useCheckInStore();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,7 +61,7 @@ export default function JourneyDashboardScreen(): React.JSX.Element {
 
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={load} />}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={() => { void load(); }} />}
       >
         {activeJourney ? (
           <TouchableOpacity
@@ -98,13 +101,22 @@ export default function JourneyDashboardScreen(): React.JSX.Element {
             <Text style={[styles.emptyText, { color: theme.colors.onSurfaceVariant }]}>
               No pending check-ins
             </Text>
-            <TouchableOpacity
-              style={[styles.addBtn, { borderColor: theme.colors.primary }]}
-              onPress={() => navigation.navigate('CheckIn', {})}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ Schedule</Text>
-            </TouchableOpacity>
+            <View style={styles.addBtnRow}>
+              <TouchableOpacity
+                style={[styles.addBtn, { borderColor: theme.colors.primary }]}
+                onPress={() => navigation.navigate('CheckIn', {})}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ One-time</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.addBtn, { borderColor: theme.colors.primary }]}
+                onPress={() => navigation.navigate('RecurringCheckIn')}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ Recurring</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <>
@@ -127,15 +139,22 @@ export default function JourneyDashboardScreen(): React.JSX.Element {
                 </View>
               </TouchableOpacity>
             ))}
-            <TouchableOpacity
-              style={[styles.addBtn, { borderColor: theme.colors.primary, marginTop: 8, alignSelf: 'center' }]}
-              onPress={() => navigation.navigate('CheckIn', {})}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>
-                + Schedule New
-              </Text>
-            </TouchableOpacity>
+            <View style={[styles.addBtnRow, { marginTop: 8 }]}>
+              <TouchableOpacity
+                style={[styles.addBtn, { borderColor: theme.colors.primary }]}
+                onPress={() => navigation.navigate('CheckIn', {})}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ One-time</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.addBtn, { borderColor: theme.colors.primary }]}
+                onPress={() => navigation.navigate('RecurringCheckIn')}
+                accessibilityRole="button"
+              >
+                <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ Recurring</Text>
+              </TouchableOpacity>
+            </View>
           </>
         )}
 
@@ -200,6 +219,7 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
     },
     emptyCard: { borderRadius: theme.radius.lg, padding: theme.spacing.lg, alignItems: 'center', marginBottom: 8 },
     emptyText: { fontSize: 14, marginBottom: theme.spacing.sm },
+    addBtnRow: { flexDirection: 'row', gap: 8 },
     addBtn: { borderWidth: 1, borderRadius: theme.radius.md, paddingHorizontal: theme.spacing.md, paddingVertical: 6 },
     addBtnText: { fontSize: 14, fontWeight: '600' },
     checkinRow: { flexDirection: 'row', alignItems: 'center', padding: theme.spacing.md, borderRadius: theme.radius.md, marginBottom: 8 },

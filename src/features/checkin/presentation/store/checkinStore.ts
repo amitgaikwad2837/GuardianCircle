@@ -5,11 +5,11 @@ interface CheckInState {
   pending: CheckIn[];
   isLoading: boolean;
 
-  setPending(checkins: CheckIn[]): void;
-  addCheckIn(checkin: CheckIn): void;
-  updateCheckIn(id: string, update: Partial<CheckIn>): void;
-  removeCheckIn(id: string): void;
-  setLoading(loading: boolean): void;
+  setPending: (checkins: CheckIn[]) => void;
+  addCheckIn: (checkin: CheckIn) => void;
+  updateCheckIn: (id: string, update: Partial<CheckIn>) => void;
+  removeCheckIn: (id: string) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const useCheckInStore = create<CheckInState>((set) => ({

@@ -30,7 +30,8 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
   const route    = useRoute<Route>();
   const { journeyId } = route.params;
 
-  const { activeJourney, setActive, updateActive } = useJourneyStore();
+  const activeJourney              = useJourneyStore((s) => s.activeJourney);
+  const { setActive, updateActive } = useJourneyStore();
   const [journey, setJourney]   = useState<Journey | null>(activeJourney);
   const [isBusy, setIsBusy]     = useState(false);
   const [elapsed, setElapsed]   = useState(0); // seconds since journey start
@@ -51,7 +52,7 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
 
   // Periodic location update + deviation check
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const interval = setInterval((): void => { void (async () => {
       try {
         const loc = await LocationService.getCurrentLocation();
         const uc = new DeviationCheckUseCase();
@@ -60,7 +61,7 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
         const updated = await repo.getById(journeyId);
         if (updated) { setJourney(updated); updateActive(updated); }
       } catch {}
-    }, UPDATE_INTERVAL_MS);
+    })(); }, UPDATE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [journeyId, updateActive]);
 
@@ -68,8 +69,8 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
     const h = Math.floor(secs / 3600);
     const m = Math.floor((secs % 3600) / 60);
     const s = secs % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
+    if (h > 0) {return `${h}h ${m}m`;}
+    if (m > 0) {return `${m}m ${s}s`;}
     return `${s}s`;
   };
 
@@ -95,17 +96,12 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
         {
           text: 'Cancel Journey',
           style: 'destructive',
-          onPress: async () => {
+          onPress: (): void => {
             setIsBusy(true);
-            try {
-              await new CancelJourneyUseCase().execute(journeyId);
-              setActive(null);
-              nav.popToTop();
-            } catch (err) {
-              Alert.alert('Error', err instanceof Error ? err.message : 'Failed.');
-            } finally {
-              setIsBusy(false);
-            }
+            void new CancelJourneyUseCase().execute(journeyId)
+              .then(() => { setActive(null); nav.popToTop(); })
+              .catch((err: unknown) => { Alert.alert('Error', err instanceof Error ? err.message : 'Failed.'); })
+              .finally(() => { setIsBusy(false); });
           },
         },
       ],
@@ -189,7 +185,7 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
       <View style={[styles.footer, { borderTopColor: theme.colors.divider, backgroundColor: theme.colors.background }]}>
         <TouchableOpacity
           style={[styles.arriveBtn, { backgroundColor: theme.colors.primary }, isBusy && { opacity: 0.6 }]}
-          onPress={handleArrive}
+          onPress={() => { void handleArrive(); }}
           disabled={isBusy}
           accessibilityRole="button"
           accessibilityLabel="I have arrived"

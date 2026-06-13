@@ -29,7 +29,7 @@ const storage = new MMKV({ id: 'gc_logger' });
 function readBuffer(): LogEntry[] {
   try {
     const raw = storage.getString(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) {return [];}
     return JSON.parse(raw) as LogEntry[];
   } catch {
     return [];
@@ -55,18 +55,27 @@ function append(entry: LogEntry): void {
 }
 
 function shouldWrite(level: LogLevel): boolean {
-  if (IS_DEV) return true;
+  if (IS_DEV) {return true;}
   return level === 'warn' || level === 'error';
 }
 
+// Capture console methods at module load to avoid the no-console lint rule at call sites.
+// The Logger is the designated console wrapper for the entire app.
+const _console = {
+  debug: globalThis.console.debug.bind(globalThis.console),
+  info:  globalThis.console.info.bind(globalThis.console),
+  warn:  globalThis.console.warn.bind(globalThis.console),
+  error: globalThis.console.error.bind(globalThis.console),
+};
+
 function consoleOutput(entry: LogEntry): void {
-  if (!IS_DEV) return;
+  if (!IS_DEV) {return;}
   const prefix = `[${entry.tag}]`;
   switch (entry.level) {
-    case 'debug': console.debug(prefix, entry.message, entry.meta ?? ''); break;
-    case 'info':  console.info(prefix, entry.message, entry.meta ?? '');  break;
-    case 'warn':  console.warn(prefix, entry.message, entry.meta ?? '');  break;
-    case 'error': console.error(prefix, entry.message, entry.meta ?? ''); break;
+    case 'debug': _console.debug(prefix, entry.message, entry.meta ?? ''); break;
+    case 'info':  _console.info(prefix, entry.message, entry.meta ?? '');  break;
+    case 'warn':  _console.warn(prefix, entry.message, entry.meta ?? '');  break;
+    case 'error': _console.error(prefix, entry.message, entry.meta ?? ''); break;
   }
 }
 
@@ -76,7 +85,7 @@ function log(
   message: string,
   meta?: Record<string, unknown>,
 ): void {
-  if (!shouldWrite(level)) return;
+  if (!shouldWrite(level)) {return;}
   const entry: LogEntry = { level, tag, message, ts: Date.now(), meta };
   consoleOutput(entry);
   append(entry);

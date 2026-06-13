@@ -29,15 +29,15 @@ export default function GeofenceDetailScreen(): React.JSX.Element {
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-    if (label.trim().length === 0) next['label'] = 'Label is required';
+    if (label.trim().length === 0) {next.label = 'Label is required';}
     const r = parseInt(radius, 10);
-    if (isNaN(r) || r < 50) next['radius'] = 'Minimum 50 metres';
+    if (isNaN(r) || r < 50) {next.radius = 'Minimum 50 metres';}
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const handleSave = async (): Promise<void> => {
-    if (!validate()) return;
+    if (!validate()) {return;}
     setIsBusy(true);
     try {
       const location = await LocationService.getCurrentLocation().catch(() => null);
@@ -78,7 +78,7 @@ export default function GeofenceDetailScreen(): React.JSX.Element {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={[styles.fieldLabel, { color: theme.colors.onSurface }]}>Name</Text>
         <TextInput
-          style={[styles.input, { borderColor: errors['label'] ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
+          style={[styles.input, { borderColor: errors.label ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
           placeholder="e.g. Home, Work, Gym"
           placeholderTextColor={theme.colors.onSurfaceVariant}
           value={label}
@@ -86,20 +86,20 @@ export default function GeofenceDetailScreen(): React.JSX.Element {
           returnKeyType="next"
           accessibilityLabel="Zone name"
         />
-        {errors['label'] && <Text style={[styles.error, { color: theme.colors.danger }]}>{errors['label']}</Text>}
+        {errors.label && <Text style={[styles.error, { color: theme.colors.danger }]}>{errors.label}</Text>}
 
         <Text style={[styles.fieldLabel, { color: theme.colors.onSurface, marginTop: 16 }]}>
           Radius (metres)
         </Text>
         <TextInput
-          style={[styles.input, { borderColor: errors['radius'] ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
+          style={[styles.input, { borderColor: errors.radius ? theme.colors.danger : theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.surface }]}
           value={radius}
           onChangeText={setRadius}
           keyboardType="number-pad"
           returnKeyType="done"
           accessibilityLabel="Radius in metres"
         />
-        {errors['radius'] && <Text style={[styles.error, { color: theme.colors.danger }]}>{errors['radius']}</Text>}
+        {errors.radius && <Text style={[styles.error, { color: theme.colors.danger }]}>{errors.radius}</Text>}
 
         <Text style={[styles.fieldLabel, { color: theme.colors.onSurface, marginTop: 16 }]}>
           Zone type
@@ -145,7 +145,7 @@ export default function GeofenceDetailScreen(): React.JSX.Element {
 
         <TouchableOpacity
           style={[styles.saveBtn, { backgroundColor: theme.colors.primary, marginTop: theme.spacing.xl }, isBusy && { opacity: 0.6 }]}
-          onPress={handleSave}
+          onPress={() => { void handleSave(); }}
           disabled={isBusy}
           accessibilityRole="button"
           accessibilityLabel="Save safe zone"

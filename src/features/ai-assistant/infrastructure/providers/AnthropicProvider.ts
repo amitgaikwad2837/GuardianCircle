@@ -54,7 +54,7 @@ export class AnthropicProvider implements IAIProvider {
     try {
       const response = await fetch('https://api.anthropic.com/v1/models', {
         headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        signal: (AbortSignal as any).timeout(8000),
+        signal: (AbortSignal as { timeout: (ms: number) => AbortSignal }).timeout(8000),
       });
       return response.ok;
     } catch {
@@ -72,7 +72,7 @@ export class AnthropicProvider implements IAIProvider {
 
   private async getKey(): Promise<string> {
     const key = await SecureStore.get(KEY_ALIAS);
-    if (!key) throw new Error('Anthropic API key not configured.');
+    if (!key) {throw new Error('Anthropic API key not configured.');}
     return key;
   }
 }
