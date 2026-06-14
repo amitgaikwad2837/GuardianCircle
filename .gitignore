@@ -61,6 +61,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# JVM heap dumps from profiling sessions
+*.hprof
+
 # Crash logs (local only, never committed)
 crash_logs/
 

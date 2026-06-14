@@ -10,3 +10,4 @@
 | [ADR-006](adr-006-fcm-relay.md) | Stateless FCM relay for push notifications | Accepted |
 | [ADR-007](adr-007-no-analytics.md) | No analytics SDK | Accepted |
 | [ADR-008](adr-008-byok-ai.md) | BYOK AI — keys never leave device | Accepted |
+| [ADR-009](adr-009-ble-mesh.md) | Offline BLE SOS mesh | Accepted |
