@@ -12,6 +12,8 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.facebook.soloader.SoLoader
 import com.guardiancircle.app.BuildConfig
 import com.guardiancircle.modules.*
@@ -38,6 +40,7 @@ class MainApplication : Application(), ReactApplication {
         super.onCreate()
         SoLoader.init(this, false)
         if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) load()
+        WorkManager.initialize(this, Configuration.Builder().build())
         createNotificationChannels()
     }
 
