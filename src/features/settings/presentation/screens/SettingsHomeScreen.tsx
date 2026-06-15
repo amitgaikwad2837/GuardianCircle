@@ -209,8 +209,6 @@ function ChevronRight({ color }: { color: string }): React.JSX.Element {
   return <Text style={{ color, fontSize: 18, fontWeight: '300' }}>›</Text>;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     header: {

@@ -85,7 +85,7 @@ export function SetupChecklist(): React.JSX.Element | null {
 
       {/* Progress bar */}
       <View style={styles.barTrack} accessibilityElementsHidden>
-        <View style={[styles.barFill, { width: `${pct}%` as `${number}%` }]} />
+        <View style={[styles.barFill, { width: `${pct}%` }]} />
       </View>
 
       <View style={styles.items}>

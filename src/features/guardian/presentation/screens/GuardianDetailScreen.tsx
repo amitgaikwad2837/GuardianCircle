@@ -195,8 +195,6 @@ function InfoRow({ label, value, theme }: { label: string; value: string; theme:
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     loadingCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },

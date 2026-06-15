@@ -106,7 +106,7 @@ class BleMeshOrchestratorImpl {
       await BleMeshService.startScanning();
       this.isScanning = true;
       this.scanUnsubscribe = BleMeshService.onBeaconReceived(
-        (b) => void this.onBeaconReceived(b),
+        (b) => { void this.onBeaconReceived(b); },
       );
       Logger.info(TAG, 'BLE scanning started');
     } catch (err) {
@@ -164,7 +164,7 @@ class BleMeshOrchestratorImpl {
       Logger.info(TAG, 'Relaying SOS beacon', { hopCount: originalHopCount + 1 });
 
       // Stop re-broadcasting after 30 s (enough for nearby devices to pick it up)
-      setTimeout(() => void BleMeshService.stopBeacon(), 30_000);
+      setTimeout(() => { void BleMeshService.stopBeacon(); }, 30_000);
     } catch (err) {
       Logger.warn(TAG, 'Could not relay beacon', { err });
     }

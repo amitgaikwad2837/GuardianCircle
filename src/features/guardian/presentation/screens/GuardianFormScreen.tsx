@@ -218,8 +218,6 @@ export default function GuardianFormScreen(): React.JSX.Element {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     flex: { flex: 1 },
     container: { flex: 1, backgroundColor: theme.colors.background },

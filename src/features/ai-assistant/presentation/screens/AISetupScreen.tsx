@@ -180,7 +180,7 @@ export default function AISetupScreen(): React.JSX.Element {
           <Text style={[styles.fieldLabel, { color: theme.colors.onSurfaceVariant }]}>System prompt</Text>
           <TextInput
             style={[styles.input, styles.promptInput, { borderColor: theme.colors.border, color: theme.colors.onSurface, backgroundColor: theme.colors.background }]}
-            placeholder='e.g. You are a friendly yoga instructor. Help beginners learn poses, breathing, and routines. Keep advice safe and suitable for all fitness levels.'
+            placeholder="e.g. You are a friendly yoga instructor. Help beginners learn poses, breathing, and routines. Keep advice safe and suitable for all fitness levels."
             placeholderTextColor={theme.colors.onSurfaceVariant}
             value={assistantPrompt}
             onChangeText={setAssistantPrompt}

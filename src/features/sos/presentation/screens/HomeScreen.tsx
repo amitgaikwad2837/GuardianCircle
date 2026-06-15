@@ -213,7 +213,7 @@ export default function HomeScreen(): React.JSX.Element {
           'Guardians unreachable',
           'Your SOS was recorded but we could not reach any guardian right now. Call emergency services.',
           [
-            { text: 'Call 112', onPress: () => void Linking.openURL('tel:112'), style: 'destructive' },
+            { text: 'Call 112', onPress: () => { void Linking.openURL('tel:112'); }, style: 'destructive' },
             { text: 'Dismiss', style: 'cancel' },
           ],
         );
@@ -225,7 +225,7 @@ export default function HomeScreen(): React.JSX.Element {
         'Alert failed',
         'Could not send emergency alert. Please call emergency services directly.',
         [
-          { text: 'Call 112', onPress: () => void Linking.openURL('tel:112'), style: 'destructive' },
+          { text: 'Call 112', onPress: () => { void Linking.openURL('tel:112'); }, style: 'destructive' },
           { text: 'Dismiss', style: 'cancel' },
         ],
       );
@@ -520,8 +520,6 @@ function QuickActionButton({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
