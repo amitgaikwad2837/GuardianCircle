@@ -1,4 +1,9 @@
-import { EventBus } from '@core/events/EventBus';
+// FCMMessageHandler has module-level `registered` state, so we use
+// jest.resetModules() + dynamic require in beforeEach to get a fresh module
+// with registered=false before every test. We also re-require EventBus so
+// the test and FCMMessageHandler share the SAME fresh instance — otherwise
+// spies and listeners are registered on a different EventBus than the one
+// the handler emits to.
 
 // ── Mock Firebase messaging ──────────────────────────────────────────────────
 const mockOnMessage               = jest.fn();
@@ -25,7 +30,7 @@ jest.mock('@core/logger/Logger', () => ({
   Logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 
-// ── Mock DI Container (no guardian repo needed for basic tests) ───────────────
+// ── Mock DI Container ────────────────────────────────────────────────────────
 jest.mock('@core/di/Container', () => ({
   Container: { resolve: jest.fn().mockReturnValue({ getById: jest.fn().mockResolvedValue(null) }) },
   DI_TOKENS: { IGuardianRepository: 'IGuardianRepository' },
@@ -37,15 +42,18 @@ jest.mock('@core/crypto/IdentityManager', () => ({
 }));
 
 describe('FCMMessageHandler', () => {
-  // FCMMessageHandler has module-level `registered` state. Use dynamic require
-  // after jest.resetModules() so each test gets a fresh module with registered=false.
   let FCMMessageHandler: { register: () => void };
+  let EventBus: { on: (e: string, cb: (p: unknown) => void) => () => void };
 
   let emittedEvents: Array<{ event: string; payload: unknown }>;
   let offListener: (() => void) | null = null;
 
   beforeEach(() => {
     jest.resetModules();
+
+    // Re-require both modules so they share the same fresh EventBus instance.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    EventBus = (require('@core/events/EventBus') as { EventBus: typeof EventBus }).EventBus;
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     FCMMessageHandler = (require('@core/fcm/FCMMessageHandler') as {
       FCMMessageHandler: { register: () => void };
@@ -133,6 +141,7 @@ describe('FCMMessageHandler', () => {
       },
     });
 
+    expect(emittedEvents).toHaveLength(1);
     expect(emittedEvents[0]?.payload).toMatchObject({ etaMinutes: undefined });
   });
 });
