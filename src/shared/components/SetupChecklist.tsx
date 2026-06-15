@@ -77,7 +77,7 @@ export function SetupChecklist(): React.JSX.Element | null {
   const pct = Math.round((doneCount / items.length) * 100);
 
   return (
-    <View style={styles.card} accessibilityRole="region" accessibilityLabel={`Setup checklist: ${pct}% complete`}>
+    <View style={styles.card} accessibilityRole="none" accessibilityLabel={`Setup checklist: ${pct}% complete`}>
       <View style={styles.header}>
         <Text style={styles.title}>Get started</Text>
         <Text style={styles.pct}>{pct}%</Text>

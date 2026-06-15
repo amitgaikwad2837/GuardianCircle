@@ -55,7 +55,9 @@ jobs:
       - name: Snyk — fail on HIGH or CRITICAL CVEs
         uses: snyk/actions/node@master
         with:
-          args: --severity-threshold=high --all-projects
+          # Scope to package.json only — Android Gradle manifests require a full
+          # SDK build environment and cannot be parsed in the CI Node-only job.
+          args: --severity-threshold=high --file=package.json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 

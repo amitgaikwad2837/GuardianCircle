@@ -471,7 +471,7 @@ export default function HomeScreen(): React.JSX.Element {
             label="Check In"
             symbol="✓"
             color={theme.colors.safe}
-            onPress={() => navigation.navigate('Journey', { screen: 'CheckIn' })}
+            onPress={() => navigation.navigate('Journey', { screen: 'CheckIn' } as never)}
             accessibilityHint="Send a check-in to let guardians know you are safe"
           />
           <QuickActionButton
