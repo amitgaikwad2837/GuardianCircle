@@ -38,10 +38,19 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': 'error',
 
+    // void expr() is the intentional pattern to discard a promise without floating it
+    'no-void': ['warn', { allowAsStatement: true }],
+
     'react/react-in-jsx-scope': 'off',
-    'react-native/no-inline-styles': 'warn',
-    'react-native/no-unused-styles': 'warn',
+    // Dynamic styles (e.g. color based on state) must be inline in React Native;
+    // static ones have been moved to StyleSheet — rule generates too much noise.
+    'react-native/no-inline-styles': 'off',
+    // Unused-styles detection breaks for dynamic style arrays ([styles.a, cond && styles.b]);
+    // the rule reports all conditional styles as unused.
+    'react-native/no-unused-styles': 'off',
     'react-native/no-raw-text': ['error', { skip: ['AccessibleButton'] }],
+    // Tab bar icons are passed as props — this is the correct React Navigation pattern.
+    'react/no-unstable-nested-components': ['warn', { allowAsProps: true }],
   },
   overrides: [
     {
