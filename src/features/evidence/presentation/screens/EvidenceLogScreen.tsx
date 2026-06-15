@@ -106,7 +106,11 @@ export default function EvidenceLogScreen(): React.JSX.Element {
           text: 'Delete',
           style: 'destructive',
           onPress: (): void => {
-            void repo.delete(item.id).catch(() => {}).then(() => { void load(); });
+            void repo.delete(item.id)
+              .then(() => { void load(); })
+              .catch((err: unknown) => {
+                Alert.alert('Delete Failed', err instanceof Error ? err.message : 'Could not delete evidence item.');
+              });
           },
         },
       ],

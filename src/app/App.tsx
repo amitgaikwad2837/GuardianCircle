@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AppNavigator } from '@core/navigation/AppNavigator';
+import { AppNavigator, linking } from '@core/navigation/AppNavigator';
 import { RootModalManager } from './RootModalManager';
 import { DatabaseManager } from '@core/storage/database/DatabaseManager';
 import { IdentityManager } from '@core/crypto/IdentityManager';
@@ -134,7 +134,7 @@ export default function App(): React.JSX.Element {
         <SafeAreaProvider>
           <ThemeProvider>
             <QueryClientProvider client={queryClient}>
-              <NavigationContainer>
+              <NavigationContainer linking={linking}>
                 <Suspense
                   fallback={
                     <View style={styles.splash}>

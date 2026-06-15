@@ -2,10 +2,34 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator }   from '@react-navigation/bottom-tabs';
+import type { LinkingOptions } from '@react-navigation/native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { EventBus } from '@core/events/EventBus';
 import { colors } from '@core/theme/tokens';
+
+// ── Deep link / notification routing ─────────────────────────────────────────
+// Notification taps emit an intent with a guardianCircle:// URI. React Navigation
+// resolves it against this config so the user lands on the correct screen.
+export const linking: LinkingOptions<Record<string, object | undefined>> = {
+  prefixes: ['guardianCircle://'],
+  config: {
+    screens: {
+      Home: 'incident/:incidentId',
+      Journey: {
+        screens: {
+          ActiveJourney: 'journey/:journeyId',
+          CheckIn: 'checkin',
+        },
+      },
+      Settings: {
+        screens: {
+          EvidenceLog: 'evidence',
+        },
+      },
+    },
+  },
+};
 
 import type {
   OnboardingStackParams,
