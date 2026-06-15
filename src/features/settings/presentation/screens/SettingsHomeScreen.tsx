@@ -209,6 +209,7 @@ function ChevronRight({ color }: { color: string }): React.JSX.Element {
   return <Text style={{ color, fontSize: 18, fontWeight: '300' }}>›</Text>;
 }
 
+function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     header: {

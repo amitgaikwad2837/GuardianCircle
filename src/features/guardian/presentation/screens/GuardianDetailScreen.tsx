@@ -195,6 +195,7 @@ function InfoRow({ label, value, theme }: { label: string; value: string; theme:
   );
 }
 
+function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     loadingCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },

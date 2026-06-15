@@ -520,6 +520,7 @@ function QuickActionButton({
   );
 }
 
+function makeStyles(theme: ReturnType<typeof useTheme>) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
