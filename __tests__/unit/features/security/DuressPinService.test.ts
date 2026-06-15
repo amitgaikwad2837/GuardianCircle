@@ -1,7 +1,6 @@
 import { NativeModules } from 'react-native';
 import { DuressPinService } from '@features/security/application/DuressPinService';
 import { SecureStore }    from '@core/storage/secure/SecureStore';
-import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -11,8 +10,15 @@ function mockHashFn(pin: string, salt: string): { hash: string } {
   return { hash: `HASH(${pin},${salt})` };
 }
 
-// SecureStore backed by an in-memory map so tests are isolated
+// SecureStore backed by an in-memory map so tests are isolated.
+// PIN_FAILED_ATTEMPTS and PIN_LOCKED_UNTIL were moved to SecureStore (Task #10),
+// so all rate-limit state lives here — not in PreferencesStore.
 const _store: Map<string, string> = new Map();
+
+const KEYS = {
+  pinFailedAttempts: 'gc_pin_failed_attempts',
+  pinLockedUntil:    'gc_pin_locked_until',
+} as const;
 
 function stubSecureStore(): void {
   jest.spyOn(SecureStore, 'set').mockImplementation(async (key, value) => {
@@ -31,10 +37,6 @@ function stubSecureStore(): void {
 beforeEach(() => {
   _store.clear();
   stubSecureStore();
-
-  // Reset rate-limit state in PreferencesStore
-  PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 0);
-  PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, 0);
 
   // Mock CryptoModule methods used by DuressPinService
   NativeModules.CryptoModule.generateSalt = jest.fn().mockResolvedValue('SALT');
@@ -116,9 +118,10 @@ describe('checkPin — real PIN', () => {
   });
 
   it('resets failed attempt counter on correct PIN', async () => {
-    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 3);
+    // Seed the counter directly in SecureStore (now owns this state)
+    _store.set(KEYS.pinFailedAttempts, '3');
     await DuressPinService.checkPin('9753');
-    expect(PreferencesStore.getNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS)).toBe(0);
+    expect(Number(_store.get(KEYS.pinFailedAttempts))).toBe(0);
   });
 });
 
@@ -127,7 +130,6 @@ describe('checkPin — real PIN', () => {
 describe('checkPin — duress PIN', () => {
   beforeEach(async () => {
     await DuressPinService.setRealPin('9753');
-    // setDuressPin calls verifyRealPin('8642') → should return false
     await DuressPinService.setDuressPin('8642');
   });
 
@@ -174,22 +176,21 @@ describe('rate limiting', () => {
   });
 
   it('increments failed attempt counter on wrong PIN', async () => {
-    await DuressPinService.checkPin('0000'); // fails format validation — skip
-    // Use a valid-format but wrong PIN
+    // Use a valid-format but wrong PIN (0000 fails format validation)
     await DuressPinService.checkPin('8642');
-    expect(PreferencesStore.getNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS)).toBe(1);
+    expect(Number(_store.get(KEYS.pinFailedAttempts))).toBe(1);
   });
 
   it('locks out after 5 failed attempts', async () => {
-    // Force 5 failed attempts by setting the counter directly
-    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 4);
+    // Seed 4 prior failures directly in SecureStore
+    _store.set(KEYS.pinFailedAttempts, '4');
     await DuressPinService.checkPin('1357'); // 5th wrong attempt → lockout
-    expect(PreferencesStore.getNumber(PREF_KEYS.PIN_LOCKED_UNTIL)).toBeGreaterThan(Date.now());
+    expect(Number(_store.get(KEYS.pinLockedUntil))).toBeGreaterThan(Date.now());
   });
 
   it('throws immediately when locked out', async () => {
-    // Set lock to 60 s in the future
-    PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, Date.now() + 60_000);
+    // Set lock to 60 s in the future via SecureStore
+    _store.set(KEYS.pinLockedUntil, String(Date.now() + 60_000));
     await expect(DuressPinService.checkPin('9753')).rejects.toThrow(
       'Too many failed attempts',
     );

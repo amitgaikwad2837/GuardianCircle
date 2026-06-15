@@ -1,9 +1,8 @@
-import { FCMMessageHandler } from '@core/fcm/FCMMessageHandler';
 import { EventBus } from '@core/events/EventBus';
 
 // ── Mock Firebase messaging ──────────────────────────────────────────────────
-const mockOnMessage          = jest.fn();
-const mockGetInitialNotification = jest.fn().mockResolvedValue(null);
+const mockOnMessage               = jest.fn();
+const mockGetInitialNotification  = jest.fn().mockResolvedValue(null);
 const mockOnNotificationOpenedApp = jest.fn();
 
 jest.mock('@react-native-firebase/messaging', () => () => ({
@@ -26,22 +25,42 @@ jest.mock('@core/logger/Logger', () => ({
   Logger: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
 
+// ── Mock DI Container (no guardian repo needed for basic tests) ───────────────
+jest.mock('@core/di/Container', () => ({
+  Container: { resolve: jest.fn().mockReturnValue({ getById: jest.fn().mockResolvedValue(null) }) },
+  DI_TOKENS: { IGuardianRepository: 'IGuardianRepository' },
+}));
+
+// ── Mock IdentityManager ──────────────────────────────────────────────────────
+jest.mock('@core/crypto/IdentityManager', () => ({
+  IdentityManager: { verify: jest.fn().mockResolvedValue(true) },
+}));
+
 describe('FCMMessageHandler', () => {
+  // FCMMessageHandler has module-level `registered` state. Use dynamic require
+  // after jest.resetModules() so each test gets a fresh module with registered=false.
+  let FCMMessageHandler: { register: () => void };
+
   let emittedEvents: Array<{ event: string; payload: unknown }>;
   let offListener: (() => void) | null = null;
 
   beforeEach(() => {
+    jest.resetModules();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    FCMMessageHandler = (require('@core/fcm/FCMMessageHandler') as {
+      FCMMessageHandler: { register: () => void };
+    }).FCMMessageHandler;
+
     emittedEvents = [];
     offListener = EventBus.on('sos:acknowledged', (payload) => {
       emittedEvents.push({ event: 'sos:acknowledged', payload });
     });
-    // Reset the module-level `registered` flag between tests by re-importing.
-    jest.resetModules();
+
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
     offListener?.();
-    jest.clearAllMocks();
   });
 
   it('registers FCM handlers on first call', () => {
@@ -61,8 +80,7 @@ describe('FCMMessageHandler', () => {
   it('emits sos:acknowledged for a valid ack payload', async () => {
     FCMMessageHandler.register();
 
-    // Capture the foreground message handler
-    const foregroundHandler = mockOnMessage.mock.calls[0][0] as (
+    const foregroundHandler = mockOnMessage.mock.calls[0]?.[0] as (
       msg: { data: Record<string, string> },
     ) => Promise<void>;
 
@@ -77,7 +95,7 @@ describe('FCMMessageHandler', () => {
     });
 
     expect(emittedEvents).toHaveLength(1);
-    expect(emittedEvents[0]!.payload).toMatchObject({
+    expect(emittedEvents[0]?.payload).toMatchObject({
       incidentId: 'incident-123',
       guardianId: 'guardian-456',
       guardianName: 'Alice',
@@ -88,7 +106,7 @@ describe('FCMMessageHandler', () => {
   it('does not emit sos:acknowledged for an unrecognised message type', async () => {
     FCMMessageHandler.register();
 
-    const foregroundHandler = mockOnMessage.mock.calls[0][0] as (
+    const foregroundHandler = mockOnMessage.mock.calls[0]?.[0] as (
       msg: { data: Record<string, string> },
     ) => Promise<void>;
 
@@ -102,7 +120,7 @@ describe('FCMMessageHandler', () => {
   it('handles missing etaMinutes gracefully', async () => {
     FCMMessageHandler.register();
 
-    const foregroundHandler = mockOnMessage.mock.calls[0][0] as (
+    const foregroundHandler = mockOnMessage.mock.calls[0]?.[0] as (
       msg: { data: Record<string, string> },
     ) => Promise<void>;
 
@@ -115,6 +133,6 @@ describe('FCMMessageHandler', () => {
       },
     });
 
-    expect(emittedEvents[0]!.payload).toMatchObject({ etaMinutes: undefined });
+    expect(emittedEvents[0]?.payload).toMatchObject({ etaMinutes: undefined });
   });
 });
