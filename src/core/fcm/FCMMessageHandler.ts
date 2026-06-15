@@ -20,6 +20,7 @@ interface AckPayload {
   guardianName: string;
   etaMinutes?: string;  // FCM data values are always strings
   signature?: string;   // ECDSA signature over "${incidentId}:${guardianId}"
+  [key: string]: string | undefined; // satisfies Record<string, string | undefined>
 }
 
 function isAckPayload(data: Record<string, string | undefined>): data is AckPayload {

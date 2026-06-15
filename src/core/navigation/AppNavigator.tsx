@@ -7,11 +7,12 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { EventBus } from '@core/events/EventBus';
 import { colors } from '@core/theme/tokens';
+import type { MainTabParams } from './NavigationTypes';
 
 // ── Deep link / notification routing ─────────────────────────────────────────
 // Notification taps emit an intent with a guardianCircle:// URI. React Navigation
 // resolves it against this config so the user lands on the correct screen.
-export const linking: LinkingOptions<Record<string, object | undefined>> = {
+export const linking: LinkingOptions<MainTabParams> = {
   prefixes: ['guardianCircle://'],
   config: {
     screens: {
@@ -33,7 +34,6 @@ export const linking: LinkingOptions<Record<string, object | undefined>> = {
 
 import type {
   OnboardingStackParams,
-  MainTabParams,
   GuardianStackParams,
   JourneyStackParams,
   SettingsStackParams,

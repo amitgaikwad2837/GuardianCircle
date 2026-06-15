@@ -134,7 +134,7 @@ class BleMeshOrchestratorImpl {
     if (type !== BLE_TYPE_SOS && type !== BLE_TYPE_RELAY) { return; }
     if (beacon.hopCount >= 5) { return; } // max relay depth reached
 
-    Logger.info(TAG, 'Nearby SOS beacon received', beacon);
+    Logger.info(TAG, 'Nearby SOS beacon received', beacon as unknown as Record<string, unknown>);
     EventBus.emit('ble:sos_detected', { hopCount: beacon.hopCount });
 
     const enrolled = PreferencesStore.getBoolean(PREF_KEYS.MESH_RELAY_ENROLLED);
