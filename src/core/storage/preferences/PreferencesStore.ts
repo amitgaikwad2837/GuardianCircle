@@ -43,6 +43,10 @@ export const PREF_KEYS = {
 
   PIN_FAILED_ATTEMPTS: 'gc_pin_failed_attempts',
   PIN_LOCKED_UNTIL: 'gc_pin_locked_until',
+
+  // ─── Setup checklist ───────────────────────────────────────────────────────
+  CHECKLIST_GUARDIAN_ADDED: 'checklist_guardian_added',
+  CHECKLIST_TEST_SOS_DONE: 'checklist_test_sos_done',
 } as const;
 
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];

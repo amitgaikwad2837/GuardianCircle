@@ -39,7 +39,12 @@ export type AppEvents = {
   'sos:cancelled': { incidentId: string; reason: 'user' | 'timeout' };
   'sos:escalated': { incidentId: string; level: EscalationLevel };
   'sos:resolved': { incidentId: string };
-  'sos:acknowledged': { incidentId: string; guardianId: string };
+  'sos:acknowledged': {
+    incidentId: string;
+    guardianId: string;
+    guardianName: string;
+    etaMinutes?: number;
+  };
 
   // ─── Distress ──────────────────────────────────────
   'distress:detected': { eventId: string; confidence: number; signals: DistressSignal[] };

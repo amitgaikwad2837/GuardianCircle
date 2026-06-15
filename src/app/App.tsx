@@ -14,6 +14,7 @@ import { GuardianNotificationHandler } from '@features/guardian/infrastructure/G
 import { JourneyNotificationService } from '@features/journey/infrastructure/JourneyNotificationService';
 import { UnsafePlaceService } from '@features/geofence/infrastructure/UnsafePlaceService';
 import { BleMeshOrchestrator } from '@features/bluetooth-mesh/application/BleMeshOrchestrator';
+import { FCMMessageHandler } from '@core/fcm/FCMMessageHandler';
 import { ThemeProvider } from '@core/theme/ThemeProvider';
 import { ErrorBoundary } from './ErrorBoundary';
 import { EventBus } from '@core/events/EventBus';
@@ -96,6 +97,9 @@ export default function App(): React.JSX.Element {
           reason: err instanceof Error ? err.message : 'BLE mesh unavailable',
         });
       });
+
+      // 9. FCM message handler — guardian acknowledgements and deep link routing
+      FCMMessageHandler.register();
 
       Logger.info(TAG, 'Bootstrap complete');
       setInitState('ready');

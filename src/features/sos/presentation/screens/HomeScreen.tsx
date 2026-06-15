@@ -28,6 +28,14 @@ import { useSOSStore } from '../store/sosStore';
 import { useSOSActions } from '../hooks/useSOSActions';
 import { EventBus } from '@core/events/EventBus';
 import { Logger } from '@core/logger/Logger';
+import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
+import { SetupChecklist } from '@shared/components/SetupChecklist';
+
+interface GuardianAck {
+  guardianId: string;
+  guardianName: string;
+  etaMinutes?: number;
+}
 
 const TAG = 'HomeScreen';
 const HOLD_DURATION_MS   = 3000;
@@ -62,7 +70,7 @@ export default function HomeScreen(): React.JSX.Element {
   ).current;
 
   // Guardian acknowledgements received during an active incident
-  const [acknowledgements, setAcknowledgements] = React.useState<string[]>([]);
+  const [acknowledgements, setAcknowledgements] = React.useState<GuardianAck[]>([]);
 
   // BLE mesh status
   const [bleBeaconing, setBleBeaconing] = useState(false);
@@ -117,9 +125,11 @@ export default function HomeScreen(): React.JSX.Element {
       setAcknowledgements([]);
       return;
     }
-    const off = EventBus.on('sos:acknowledged', ({ guardianId }) => {
+    const off = EventBus.on('sos:acknowledged', ({ guardianId, guardianName, etaMinutes }) => {
       setAcknowledgements((prev) =>
-        prev.includes(guardianId) ? prev : [...prev, guardianId],
+        prev.some((a) => a.guardianId === guardianId)
+          ? prev
+          : [...prev, { guardianId, guardianName, etaMinutes }],
       );
       Vibration.vibrate(200);
     });
@@ -259,6 +269,8 @@ export default function HomeScreen(): React.JSX.Element {
     clearCancelTicker();
 
     if (store.status === 'countdown') {
+      // First cancelled countdown = user did a test SOS
+      PreferencesStore.setBoolean(PREF_KEYS.CHECKLIST_TEST_SOS_DONE, true);
       store.cancel();
       clearHoldTimer();
       Vibration.cancel();
@@ -399,12 +411,19 @@ export default function HomeScreen(): React.JSX.Element {
 
         {/* Guardian acknowledgement feedback */}
         {isActive && acknowledgements.length > 0 && (
-          <View style={styles.ackBanner}>
-            <Text style={styles.ackText}>
-              {acknowledgements.length === 1
-                ? '1 guardian acknowledged — on the way'
-                : `${acknowledgements.length} guardians acknowledged`}
-            </Text>
+          <View style={styles.ackBanner} accessibilityLiveRegion="polite">
+            {acknowledgements.map((ack) => {
+              const etaLabel = ack.etaMinutes != null ? ` — ETA ${ack.etaMinutes} min` : ' — on the way';
+              return (
+                <Text
+                  key={ack.guardianId}
+                  style={styles.ackText}
+                  accessibilityLabel={`${ack.guardianName} acknowledged${etaLabel}`}
+                >
+                  ✓ {ack.guardianName}{etaLabel}
+                </Text>
+              );
+            })}
           </View>
         )}
 
@@ -435,6 +454,9 @@ export default function HomeScreen(): React.JSX.Element {
           </Text>
         </View>
       )}
+
+      {/* ─── Setup checklist (hidden once all steps complete) ───────── */}
+      {isIdle && <SetupChecklist />}
 
       {/* ─── Quick actions ───────────────────────────────────────────── */}
       {isIdle && (
