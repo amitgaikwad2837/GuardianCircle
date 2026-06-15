@@ -50,7 +50,7 @@ export const DatabaseManager = {
         await database.execute('BEGIN TRANSACTION');
         try {
           // op-sqlite execute() handles one statement at a time
-          const statements = (migration.sql as string)
+          const statements = migration.sql
             .split(';')
             .map((s) => s.trim())
             .filter((s) => s.length > 0 && !s.startsWith('--'));
