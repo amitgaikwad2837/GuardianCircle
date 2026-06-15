@@ -124,7 +124,7 @@ jobs:
       - name: Generate CI signing keystore
         run: |
           keytool -genkeypair -v \
-            -keystore android/app/ci-release.keystore \
+            -keystore "$GITHUB_WORKSPACE/android/app/ci-release.keystore" \
             -alias ci-release \
             -keyalg RSA -keysize 2048 -validity 1 \
             -storepass ci-test-password \
@@ -134,7 +134,7 @@ jobs:
       - name: Build Android release bundle (CI signed)
         run: |
           cd android && ./gradlew bundleRelease \
-            -Pandroid.injected.signing.store.file=app/ci-release.keystore \
+            "-Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/android/app/ci-release.keystore" \
             -Pandroid.injected.signing.store.password=ci-test-password \
             -Pandroid.injected.signing.key.alias=ci-release \
             -Pandroid.injected.signing.key.password=ci-test-password
@@ -181,6 +181,9 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
+      - name: Start adb server
+        run: $ANDROID_HOME/platform-tools/adb start-server
 
       - name: Run Detox E2E tests
         uses: reactivecircus/android-emulator-runner@v2
