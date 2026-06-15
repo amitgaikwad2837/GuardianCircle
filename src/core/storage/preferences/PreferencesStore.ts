@@ -47,6 +47,7 @@ export const PREF_KEYS = {
   // ─── Setup checklist ───────────────────────────────────────────────────────
   CHECKLIST_GUARDIAN_ADDED: 'checklist_guardian_added',
   CHECKLIST_TEST_SOS_DONE: 'checklist_test_sos_done',
+  CHECKLIST_DURESS_PIN_SET: 'checklist_duress_pin_set',
 } as const;
 
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];

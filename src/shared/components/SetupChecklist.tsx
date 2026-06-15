@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography, radius } from '@core/theme/tokens';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
-import { DuressPinService } from '@features/security/application/DuressPinService';
 import { PermissionManager } from '@core/permissions/PermissionManager';
 import { EventBus } from '@core/events/EventBus';
 
@@ -13,10 +12,7 @@ interface ChecklistItem {
 }
 
 async function computeItems(): Promise<ChecklistItem[]> {
-  const [pinEnabled, locationGranted] = await Promise.all([
-    DuressPinService.isEnabled(),
-    PermissionManager.check('location'),
-  ]);
+  const locationGranted = await PermissionManager.check('location');
 
   return [
     {
@@ -32,7 +28,8 @@ async function computeItems(): Promise<ChecklistItem[]> {
     {
       id: 'pin',
       label: 'Set a duress PIN',
-      done: pinEnabled,
+      // Written by DuressPinService.setRealPin() — avoids a shared→feature import
+      done: PreferencesStore.getBoolean(PREF_KEYS.CHECKLIST_DURESS_PIN_SET),
     },
     {
       id: 'test_sos',

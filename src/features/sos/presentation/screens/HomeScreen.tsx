@@ -23,6 +23,9 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const HOLD_RING_RADIUS = 92;
 const HOLD_RING_CIRC   = 2 * Math.PI * HOLD_RING_RADIUS;
 
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { MainTabParams } from '@core/navigation/NavigationTypes';
 import { useTheme } from '@core/theme/ThemeProvider';
 import { useSOSStore } from '../store/sosStore';
 import { useSOSActions } from '../hooks/useSOSActions';
@@ -30,6 +33,8 @@ import { EventBus } from '@core/events/EventBus';
 import { Logger } from '@core/logger/Logger';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { SetupChecklist } from '@shared/components/SetupChecklist';
+
+type HomeNav = BottomTabNavigationProp<MainTabParams, 'Home'>;
 
 interface GuardianAck {
   guardianId: string;
@@ -44,9 +49,10 @@ const VIBRATE_HOLD_START = [0, 200, 100, 200];
 const VIBRATE_SOS_FIRED  = [0, 500, 200, 500, 200, 500];
 
 export default function HomeScreen(): React.JSX.Element {
-  const theme   = useTheme();
-  const store   = useSOSStore();
-  const actions = useSOSActions();
+  const theme      = useTheme();
+  const store      = useSOSStore();
+  const actions    = useSOSActions();
+  const navigation = useNavigation<HomeNav>();
 
   // Hold-to-trigger animation state
   const holdProgress   = useRef(new Animated.Value(0)).current;
@@ -465,14 +471,14 @@ export default function HomeScreen(): React.JSX.Element {
             label="Check In"
             symbol="✓"
             color={theme.colors.safe}
-            onPress={() => { /* Phase 3 */ }}
+            onPress={() => navigation.navigate('Journey', { screen: 'CheckIn' } as never)}
             accessibilityHint="Send a check-in to let guardians know you are safe"
           />
           <QuickActionButton
             label="Journey"
             symbol="→"
             color={theme.colors.info}
-            onPress={() => { /* Phase 3 */ }}
+            onPress={() => navigation.navigate('Journey')}
             accessibilityHint="Start a monitored journey to your destination"
           />
           <QuickActionButton

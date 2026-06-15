@@ -17,6 +17,9 @@ import { useJourneyStore } from '../store/journeyStore';
 import type { IJourneyRepository } from '../../domain/interfaces/IJourneyRepository';
 import type { Journey } from '../../domain/entities/Journey';
 import type { JourneyStackParams } from '@core/navigation/NavigationTypes';
+import { Logger } from '@core/logger/Logger';
+
+const TAG = 'ActiveJourneyScreen';
 
 type Nav   = NativeStackNavigationProp<JourneyStackParams, 'ActiveJourney'>;
 type Route = RouteProp<JourneyStackParams, 'ActiveJourney'>;
@@ -60,7 +63,11 @@ export default function ActiveJourneyScreen(): React.JSX.Element {
         const repo = Container.resolve<IJourneyRepository>(DI_TOKENS.IJourneyRepository);
         const updated = await repo.getById(journeyId);
         if (updated) { setJourney(updated); updateActive(updated); }
-      } catch {}
+      } catch (err) {
+        Logger.warn(TAG, 'Periodic location update failed', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
     })(); }, UPDATE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [journeyId, updateActive]);

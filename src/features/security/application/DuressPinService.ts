@@ -55,6 +55,7 @@ export const DuressPinService = {
     const { hash } = await Crypto.hashPin(pin, salt);
     await SecureStore.set(KEYS.realPinHash, `${salt}:${hash}`);
     await SecureStore.set(KEYS.pinEnabled, 'true');
+    PreferencesStore.setBoolean(PREF_KEYS.CHECKLIST_DURESS_PIN_SET, true);
     Logger.info(TAG, 'Real PIN set');
   },
 
