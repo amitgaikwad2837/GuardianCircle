@@ -16,6 +16,7 @@ import { UnsafePlaceService } from '@features/geofence/infrastructure/UnsafePlac
 import { BleMeshOrchestrator } from '@features/bluetooth-mesh/application/BleMeshOrchestrator';
 import { ThemeProvider } from '@core/theme/ThemeProvider';
 import { ErrorBoundary } from './ErrorBoundary';
+import { EventBus } from '@core/events/EventBus';
 import { Logger } from '@core/logger/Logger';
 import { registerDependencies } from './bootstrap/registerDependencies';
 import { colors } from '@core/theme/tokens';
@@ -78,11 +79,23 @@ export default function App(): React.JSX.Element {
       if (NativeModules.BackgroundTaskModule) {
         await (NativeModules.BackgroundTaskModule as { startVolumeSOSTrigger: () => Promise<void> })
           .startVolumeSOSTrigger()
-          .catch(() => {});
+          .catch((err: unknown) => {
+            Logger.warn(TAG, 'Volume SOS trigger init failed', { err });
+            EventBus.emit('system:capability_degraded', {
+              capability: 'volume_sos',
+              reason: err instanceof Error ? err.message : 'Volume SOS unavailable',
+            });
+          });
       }
 
       // 8. BLE mesh — offline SOS beaconing + relay scanning
-      await BleMeshOrchestrator.init().catch(() => {});
+      await BleMeshOrchestrator.init().catch((err: unknown) => {
+        Logger.warn(TAG, 'BLE mesh init failed', { err });
+        EventBus.emit('system:capability_degraded', {
+          capability: 'ble',
+          reason: err instanceof Error ? err.message : 'BLE mesh unavailable',
+        });
+      });
 
       Logger.info(TAG, 'Bootstrap complete');
       setInitState('ready');

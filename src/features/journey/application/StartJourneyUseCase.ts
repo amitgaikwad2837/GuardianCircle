@@ -40,7 +40,13 @@ export class StartJourneyUseCase {
       guardianIds = active.map((g) => g.id);
     }
 
-    const location = await LocationService.getCurrentLocation().catch(() => null);
+    const location = await LocationService.getCurrentLocation().catch((err: unknown) => {
+      EventBus.emit('system:capability_degraded', {
+        capability: 'location',
+        reason: err instanceof Error ? err.message : 'Location unavailable',
+      });
+      return null;
+    });
 
     const journey = await this.journeyRepo.create({
       destinationLabel: input.destinationLabel,

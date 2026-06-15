@@ -91,4 +91,11 @@ export type AppEvents = {
   'app:background': Record<string, never>;
   'battery:low': { level: number };
   'battery:critical': { level: number };
+  // Emitted whenever a non-fatal capability degrades (location unavailable,
+  // BLE unsupported, volume SOS init failed, etc.).  UI layers subscribe to
+  // show non-blocking status banners without crashing.
+  'system:capability_degraded': {
+    capability: 'location' | 'ble' | 'volume_sos' | 'storage';
+    reason: string;
+  };
 };

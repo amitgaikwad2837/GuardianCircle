@@ -34,6 +34,7 @@ android/app/google-services.json
 
 # Release signing credentials — never commit
 android/app/release.keystore
+android/app/ci-release.keystore
 *.release.keystore
 android/gradle.properties.local
 

@@ -15,7 +15,13 @@ import {
   type NativeModule,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+// ringContainer = touchTargets.emergency(120) + 80 = 200; arc sits 8px inside edge
+const HOLD_RING_RADIUS = 92;
+const HOLD_RING_CIRC   = 2 * Math.PI * HOLD_RING_RADIUS;
 
 import { useTheme } from '@core/theme/ThemeProvider';
 import { useSOSStore } from '../store/sosStore';
@@ -38,9 +44,22 @@ export default function HomeScreen(): React.JSX.Element {
   const holdProgress   = useRef(new Animated.Value(0)).current;
   const holdAnimation  = useRef<Animated.CompositeAnimation | null>(null);
   const holdTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Haptic pulse interval during hold — fires at 750ms, 1500ms, 2250ms
+  const hapticIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Cancellation countdown ticker
   const cancelTickRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Degraded capability warnings (location unavailable, BLE unavailable, etc.)
+  const [capabilityWarning, setCapabilityWarning] = useState<string | null>(null);
+
+  // Animated strokeDashoffset: full circumference (invisible) → 0 (full arc)
+  const holdArcOffset = useRef(
+    holdProgress.interpolate({
+      inputRange:  [0, 1],
+      outputRange: [HOLD_RING_CIRC, 0],
+    }),
+  ).current;
 
   // Guardian acknowledgements received during an active incident
   const [acknowledgements, setAcknowledgements] = React.useState<string[]>([]);
@@ -54,8 +73,27 @@ export default function HomeScreen(): React.JSX.Element {
     return () => {
       clearHoldTimer();
       clearCancelTicker();
+      if (hapticIntervalRef.current) {
+        clearInterval(hapticIntervalRef.current);
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for degraded capabilities (location denied, BLE unavailable, etc.)
+  useEffect(() => {
+    const off = EventBus.on('system:capability_degraded', ({ capability, reason }) => {
+      const labels: Record<string, string> = {
+        location: 'Location unavailable — SOS will not include coordinates',
+        ble:      'Offline BLE relay unavailable',
+        volume_sos: 'Volume button SOS unavailable',
+        storage:  'Storage warning',
+      };
+      setCapabilityWarning(labels[capability] ?? reason);
+      // Auto-dismiss after 8 s
+      setTimeout(() => setCapabilityWarning(null), 8_000);
+    });
+    return () => off();
   }, []);
 
   // Volume-button hardware SOS trigger (Vol-Down + Vol-Up held 3 s)
@@ -108,6 +146,10 @@ export default function HomeScreen(): React.JSX.Element {
     if (holdTimerRef.current) {
       clearTimeout(holdTimerRef.current);
       holdTimerRef.current = null;
+    }
+    if (hapticIntervalRef.current) {
+      clearInterval(hapticIntervalRef.current);
+      hapticIntervalRef.current = null;
     }
     holdAnimation.current?.stop();
     holdProgress.setValue(0);
@@ -188,12 +230,21 @@ export default function HomeScreen(): React.JSX.Element {
       useNativeDriver: false,
     });
     holdAnimation.current.start(({ finished }) => {
+      if (hapticIntervalRef.current) {
+        clearInterval(hapticIntervalRef.current);
+        hapticIntervalRef.current = null;
+      }
       if (finished) {
         ReactNativeHapticFeedback.trigger('notificationError');
         store.startCountdown(isSilent);
         startCancelCountdown();
       }
     });
+
+    // Pulse haptic feedback at 750ms intervals so the user feels progress
+    hapticIntervalRef.current = setInterval(() => {
+      ReactNativeHapticFeedback.trigger('impactMedium');
+    }, 750);
   }, [holdProgress, store, startCancelCountdown]);
 
   const onHoldEnd = useCallback((): void => {
@@ -263,7 +314,7 @@ export default function HomeScreen(): React.JSX.Element {
       {/* ─── SOS button area ─────────────────────────────────────────── */}
       <View style={styles.sosArea}>
 
-        {/* Animated pulse ring */}
+        {/* Animated pulse ring + SVG hold-progress arc */}
         <View style={styles.ringContainer}>
           <Animated.View style={[
             styles.pulseRing,
@@ -273,6 +324,37 @@ export default function HomeScreen(): React.JSX.Element {
               backgroundColor: theme.colors.sosRedLight,
             },
           ]} />
+
+          {/* Arc that sweeps from 0→360° over the 3s hold, giving clear visual progress */}
+          <Svg
+            width={200}
+            height={200}
+            style={StyleSheet.absoluteFill}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          >
+            <Circle
+              cx={100}
+              cy={100}
+              r={HOLD_RING_RADIUS}
+              stroke={theme.colors.sosRedLight}
+              strokeWidth={5}
+              fill="none"
+            />
+            <AnimatedCircle
+              cx={100}
+              cy={100}
+              r={HOLD_RING_RADIUS}
+              stroke={theme.colors.sosRed}
+              strokeWidth={5}
+              fill="none"
+              strokeDasharray={[HOLD_RING_CIRC, HOLD_RING_CIRC]}
+              strokeDashoffset={holdArcOffset}
+              strokeLinecap="round"
+              rotation={-90}
+              origin="100, 100"
+            />
+          </Svg>
 
           <TouchableOpacity
             style={[styles.sosButton, isActive && styles.sosButtonActive]}
@@ -303,6 +385,17 @@ export default function HomeScreen(): React.JSX.Element {
             ? `Sending alert in ${store.countdownSeconds} seconds…`
             : 'Hold the button for 3 seconds to alert your guardians'}
         </Text>
+
+        {/* Non-blocking capability warning (auto-dismisses after 8s) */}
+        {capabilityWarning != null && (
+          <View
+            style={styles.capabilityWarning}
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={capabilityWarning}
+          >
+            <Text style={styles.capabilityWarningText}>{capabilityWarning}</Text>
+          </View>
+        )}
 
         {/* Guardian acknowledgement feedback */}
         {isActive && acknowledgements.length > 0 && (
@@ -488,6 +581,22 @@ function makeStyles(theme: ReturnType<typeof useTheme>) {
     cancelButtonText: {
       ...theme.typography.labelLarge,
       color: theme.colors.sosRed,
+    },
+    capabilityWarning: {
+      marginTop: theme.spacing.xs,
+      marginBottom: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.sm,
+      backgroundColor: theme.colors.warning + '18',
+      borderWidth: 1,
+      borderColor: theme.colors.warning,
+      alignSelf: 'stretch',
+    },
+    capabilityWarningText: {
+      ...theme.typography.bodySmall,
+      color: theme.colors.warning,
+      textAlign: 'center',
     },
     ackBanner: {
       marginTop: theme.spacing.sm,

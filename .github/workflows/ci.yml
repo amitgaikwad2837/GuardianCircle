@@ -37,7 +37,29 @@ jobs:
           name: coverage-report
           path: coverage/
 
-  android-build:
+  security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Snyk — fail on HIGH or CRITICAL CVEs
+        uses: snyk/actions/node@master
+        with:
+          args: --severity-threshold=high --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  android-debug-build:
     name: Android Debug Build
     runs-on: ubuntu-latest
     needs: quality
@@ -65,8 +87,57 @@ jobs:
       - name: Build Android debug APK
         run: npm run build:android:debug
 
-      - name: Upload APK
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  android-release-build:
+    name: Android Release Build
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate CI signing keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore android/app/ci-release.keystore \
+            -alias ci-release \
+            -keyalg RSA -keysize 2048 -validity 1 \
+            -storepass ci-test-password \
+            -keypass  ci-test-password \
+            -dname "CN=GuardianCircle CI, O=CI, C=US"
+
+      - name: Build Android release bundle (CI signed)
+        run: |
+          cd android && ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=app/ci-release.keystore \
+            -Pandroid.injected.signing.store.password=ci-test-password \
+            -Pandroid.injected.signing.key.alias=ci-release \
+            -Pandroid.injected.signing.key.password=ci-test-password
+
+      - name: Upload release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab

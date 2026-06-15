@@ -22,7 +22,13 @@ export class TriggerSOSUseCase {
   ) {}
 
   async execute(input: TriggerSOSInput): Promise<SOSEvent> {
-    const location = await LocationService.getCurrentLocation().catch(() => null);
+    const location = await LocationService.getCurrentLocation().catch((err: unknown) => {
+      EventBus.emit('system:capability_degraded', {
+        capability: 'location',
+        reason: err instanceof Error ? err.message : 'Location unavailable',
+      });
+      return null;
+    });
     const senderName = PreferencesStore.getString(PREF_KEYS.USER_DISPLAY_NAME) ?? 'Your contact';
 
     const event: SOSEvent = {
