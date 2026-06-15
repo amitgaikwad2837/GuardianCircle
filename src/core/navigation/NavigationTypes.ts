@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 
 // ─── Onboarding Stack ────────────────────────────────────────────────────────
 export type OnboardingStackParams = {
@@ -9,14 +10,6 @@ export type OnboardingStackParams = {
   FirstGuardian: undefined;
   // QR scan screen reused during onboarding; prefill bypasses the picker step
   QRPair: { mode: 'show' | 'scan'; prefillName?: string; prefillPhone?: string };
-};
-
-// ─── Main Tabs ───────────────────────────────────────────────────────────────
-export type MainTabParams = {
-  Home: undefined;
-  Guardians: undefined;
-  Journey: undefined;
-  Settings: undefined;
 };
 
 // ─── Guardian Stack ──────────────────────────────────────────────────────────
@@ -40,6 +33,14 @@ export type JourneyStackParams = {
   RecurringCheckIn: undefined;
   Geofences: undefined;
   GeofenceDetail: { geofenceId?: string };
+};
+
+// ─── Main Tabs ───────────────────────────────────────────────────────────────
+export type MainTabParams = {
+  Home: undefined;
+  Guardians: undefined;
+  Journey: NavigatorScreenParams<JourneyStackParams> | undefined;
+  Settings: undefined;
 };
 
 // ─── Settings Stack ──────────────────────────────────────────────────────────

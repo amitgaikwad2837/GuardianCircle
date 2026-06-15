@@ -1,6 +1,6 @@
 import { NativeModules } from 'react-native';
 import { SecureStore }   from '@core/storage/secure/SecureStore';
-import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
+import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore'; // checklist flags only
 import { Logger }        from '@core/logger/Logger';
 
 const TAG = 'DuressPinService';
@@ -10,9 +10,11 @@ const TAG = 'DuressPinService';
  * Values are Argon2id hashes — never the raw PIN.
  */
 const KEYS = {
-  realPinHash:   'gc_real_pin_hash',
-  duressPinHash: 'gc_duress_pin_hash',
-  pinEnabled:    'gc_pin_enabled',
+  realPinHash:       'gc_real_pin_hash',
+  duressPinHash:     'gc_duress_pin_hash',
+  pinEnabled:        'gc_pin_enabled',
+  pinFailedAttempts: 'gc_pin_failed_attempts',
+  pinLockedUntil:    'gc_pin_locked_until',
 } as const;
 
 /** Minimum and maximum PIN length. */
@@ -137,32 +139,32 @@ export const DuressPinService = {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  enforceRateLimit(): Promise<void> {
-    const lockedUntil = PreferencesStore.getNumber(PREF_KEYS.PIN_LOCKED_UNTIL) ?? 0;
+  async enforceRateLimit(): Promise<void> {
+    // PIN lockout state lives in Keystore-backed SecureStore — not bypassable on rooted devices.
+    const lockedUntilStr = await SecureStore.get(KEYS.pinLockedUntil);
+    const lockedUntil = lockedUntilStr ? Number(lockedUntilStr) : 0;
     if (Date.now() < lockedUntil) {
       const remainingSec = Math.ceil((lockedUntil - Date.now()) / 1000);
-      return Promise.reject(new Error(`Too many failed attempts. Try again in ${remainingSec} seconds.`));
+      throw new Error(`Too many failed attempts. Try again in ${remainingSec} seconds.`);
     }
-    return Promise.resolve();
   },
 
-  recordFailedAttempt(): Promise<void> {
-    const attempts = (PreferencesStore.getNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS) ?? 0) + 1;
-    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, attempts);
+  async recordFailedAttempt(): Promise<void> {
+    const attemptsStr = await SecureStore.get(KEYS.pinFailedAttempts);
+    const attempts = (attemptsStr ? Number(attemptsStr) : 0) + 1;
+    await SecureStore.set(KEYS.pinFailedAttempts, String(attempts));
     if (attempts >= MAX_ATTEMPTS) {
       // Exponential backoff: 30 s, 60 s, 120 s, …
       const multiplier = Math.pow(2, Math.floor(attempts / MAX_ATTEMPTS) - 1);
       const lockoutMs = LOCKOUT_DURATION_MS * multiplier;
-      PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, Date.now() + lockoutMs);
+      await SecureStore.set(KEYS.pinLockedUntil, String(Date.now() + lockoutMs));
       Logger.warn(TAG, `PIN locked out for ${lockoutMs / 1000} s after ${attempts} failed attempts`);
     }
-    return Promise.resolve();
   },
 
-  resetFailedAttempts(): Promise<void> {
-    PreferencesStore.setNumber(PREF_KEYS.PIN_FAILED_ATTEMPTS, 0);
-    PreferencesStore.setNumber(PREF_KEYS.PIN_LOCKED_UNTIL, 0);
-    return Promise.resolve();
+  async resetFailedAttempts(): Promise<void> {
+    await SecureStore.set(KEYS.pinFailedAttempts, '0');
+    await SecureStore.set(KEYS.pinLockedUntil, '0');
   },
 
   async verifyRealPin(pin: string): Promise<boolean> {
@@ -193,13 +195,13 @@ export const DuressPinService = {
     if (!/^\d+$/.test(pin)) {
       throw new Error('PIN must contain only digits.');
     }
-    // Reject trivially sequential PINs (1234, 0000, etc.)
-    const isSequential = [...pin].every(
-      (d, i, a) => i === 0 || Number(d) === Number(a[i - 1]!) + 1,
-    );
-    const isRepeating = new Set(pin.split('')).size === 1;
-    if (isSequential || isRepeating) {
-      throw new Error('PIN is too simple. Avoid sequences like 1234 or repeated digits like 0000.');
+    // Reject trivially sequential PINs — ascending (1234) AND descending (9876)
+    const digits = [...pin].map(Number);
+    const isAscending  = digits.every((d, i) => i === 0 || d === digits[i - 1]! + 1);
+    const isDescending = digits.every((d, i) => i === 0 || d === digits[i - 1]! - 1);
+    const isRepeating  = new Set(pin.split('')).size === 1;
+    if (isAscending || isDescending || isRepeating) {
+      throw new Error('PIN is too simple. Avoid sequences like 1234, 9876, or repeated digits like 0000.');
     }
   },
 };

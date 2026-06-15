@@ -17,8 +17,7 @@
 
 type Token = string;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const registry = new Map<Token, any>();
+const registry = new Map<Token, unknown>();
 
 function register<T>(token: Token, instance: T): void {
   if (registry.has(token)) {

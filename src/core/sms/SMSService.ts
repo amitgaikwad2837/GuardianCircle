@@ -37,7 +37,9 @@ export const SmsTemplates = {
 };
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 30_000;
+// Retry delays per attempt: 2 s then 10 s. 30 s was a carrier-throttle guard
+// that is inappropriate on the SOS critical path — every second matters.
+const RETRY_DELAYS_MS = [2_000, 10_000] as const;
 
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -68,7 +70,7 @@ export const SmsService = {
           to: phoneNumber.slice(0, 6) + '****',
           error: err instanceof Error ? err.message.slice(0, 80) : String(err),
         });
-        if (!isLast) {await sleep(RETRY_DELAY_MS);}
+        if (!isLast) {await sleep(RETRY_DELAYS_MS[attempt - 1] ?? 10_000);}
       }
     }
     Logger.error(TAG, 'SMS failed after all retries', {

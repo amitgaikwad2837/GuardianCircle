@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -130,7 +131,15 @@ export default function SettingsHomeScreen(): React.JSX.Element {
           <SettingRow
             label="Privacy Policy"
             right={<ChevronRight color={theme.colors.onSurfaceVariant} />}
-            onPress={() => { /* Phase 3: open privacy policy */ }}
+            onPress={() => Alert.alert(
+              'Privacy Policy',
+              'GuardianCircle collects no data and has no backend servers.\n\n' +
+              '• All contacts and settings are stored only on your device.\n' +
+              '• AI keys you provide are stored in Android Keystore and never transmitted.\n' +
+              '• SOS alerts are sent directly from your device via SMS and (optionally) your own relay server.\n' +
+              '• No analytics, crash reporting, or tracking SDKs are included.',
+              [{ text: 'Close', style: 'cancel' }],
+            )}
           />
           <Divider />
           <SettingRow

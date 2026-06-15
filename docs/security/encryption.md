@@ -21,10 +21,15 @@ Android Keystore (hardware-backed on devices with StrongBox)
   ├── evidence_master_key        AES-256 — derives per-file keys
   ├── real_pin_hash              Argon2id(pin, salt, m=65536, t=3, p=4)
   ├── duress_pin_hash            Argon2id(duressPin, salt, ...)
+  ├── gc_pin_failed_attempts     Integer (as string) — rate-limit counter, tamper-resistant
+  ├── gc_pin_locked_until        Unix ms timestamp — lockout expiry, tamper-resistant
+  ├── relay_endpoint             User's self-hosted relay URL — protected from redirect attacks
   ├── ai_openai_key              Raw API key
   ├── ai_anthropic_key           Raw API key
   └── ai_gemini_key              Raw API key
 ```
+
+> **Note:** PIN rate-limit state (`gc_pin_failed_attempts`, `gc_pin_locked_until`) and the relay endpoint were migrated from MMKV to Android Keystore to prevent bypass on rooted devices and relay hijacking attacks.
 
 ## PIN Hashing Parameters
 

@@ -8,8 +8,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '@core/theme/ThemeProvider';
+import { Container, DI_TOKENS } from '@core/di/Container';
 import { StartJourneyUseCase } from '../../application/StartJourneyUseCase';
 import { useJourneyStore } from '../store/journeyStore';
+import type { IJourneyRepository } from '../../domain/interfaces/IJourneyRepository';
+import type { IGuardianRepository } from '@features/guardian/domain/interfaces/IGuardianRepository';
 import type { JourneyStackParams } from '@core/navigation/NavigationTypes';
 
 type Nav = NativeStackNavigationProp<JourneyStackParams>;
@@ -52,7 +55,10 @@ export default function StartJourneyScreen(): React.JSX.Element {
         expectedArrivalAt = d;
       }
 
-      const uc = new StartJourneyUseCase();
+      const uc = new StartJourneyUseCase(
+        Container.resolve<IJourneyRepository>(DI_TOKENS.IJourneyRepository),
+        Container.resolve<IGuardianRepository>(DI_TOKENS.IGuardianRepository),
+      );
       const journey = await uc.execute({
         destinationLabel: destination.trim() || undefined,
         expectedArrivalAt,

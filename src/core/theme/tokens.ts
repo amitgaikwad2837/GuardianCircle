@@ -3,6 +3,14 @@
  * Palette: teal primary (calm/protective), indigo secondary (trustworthy),
  * warm amber for warnings. Red is reserved ONLY for the SOS emergency button.
  */
+import { PixelRatio } from 'react-native';
+
+const fontScale = PixelRatio.getFontScale();
+
+function scaled(size: number): number {
+  // Clamp to 1.3× to prevent layout breaks at very large system font sizes.
+  return Math.round(size * Math.min(fontScale, 1.3));
+}
 
 export const colors = {
   // ── Emergency — ONLY for the SOS button itself ──────────────────────────
@@ -82,19 +90,20 @@ export const radius = {
 } as const;
 
 export const typography = {
-  displayLarge:   { fontSize: 32, fontWeight: '700' as const, lineHeight: 40 },
-  displayMedium:  { fontSize: 28, fontWeight: '700' as const, lineHeight: 36 },
-  headlineLarge:  { fontSize: 24, fontWeight: '700' as const, lineHeight: 32 },
-  headlineMedium: { fontSize: 20, fontWeight: '600' as const, lineHeight: 28 },
-  titleLarge:     { fontSize: 18, fontWeight: '600' as const, lineHeight: 24 },
-  titleMedium:    { fontSize: 16, fontWeight: '600' as const, lineHeight: 22 },
-  titleSmall:     { fontSize: 14, fontWeight: '600' as const, lineHeight: 20 },
-  bodyLarge:      { fontSize: 16, fontWeight: '400' as const, lineHeight: 24 },
-  bodyMedium:     { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 },
-  bodySmall:      { fontSize: 12, fontWeight: '400' as const, lineHeight: 16 },
-  labelLarge:     { fontSize: 15, fontWeight: '600' as const, lineHeight: 20 },
-  labelMedium:    { fontSize: 13, fontWeight: '500' as const, lineHeight: 18 },
-} as const;
+  displayLarge:   { fontSize: scaled(32), fontWeight: '700' as const, lineHeight: scaled(40) },
+  displayMedium:  { fontSize: scaled(28), fontWeight: '700' as const, lineHeight: scaled(36) },
+  headlineLarge:  { fontSize: scaled(24), fontWeight: '700' as const, lineHeight: scaled(32) },
+  headlineMedium: { fontSize: scaled(20), fontWeight: '600' as const, lineHeight: scaled(28) },
+  titleLarge:     { fontSize: scaled(18), fontWeight: '600' as const, lineHeight: scaled(24) },
+  titleMedium:    { fontSize: scaled(16), fontWeight: '600' as const, lineHeight: scaled(22) },
+  titleSmall:     { fontSize: scaled(14), fontWeight: '600' as const, lineHeight: scaled(20) },
+  bodyLarge:      { fontSize: scaled(16), fontWeight: '400' as const, lineHeight: scaled(24) },
+  bodyMedium:     { fontSize: scaled(14), fontWeight: '400' as const, lineHeight: scaled(20) },
+  bodySmall:      { fontSize: scaled(12), fontWeight: '400' as const, lineHeight: scaled(16) },
+  labelLarge:     { fontSize: scaled(15), fontWeight: '600' as const, lineHeight: scaled(20) },
+  labelMedium:    { fontSize: scaled(13), fontWeight: '500' as const, lineHeight: scaled(18) },
+  labelSmall:     { fontSize: scaled(11), fontWeight: '500' as const, lineHeight: scaled(16) },
+};
 
 export const touchTargets = {
   minimum: 48,

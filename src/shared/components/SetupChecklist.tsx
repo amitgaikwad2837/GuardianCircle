@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { MainTabParams } from '@core/navigation/NavigationTypes';
 import { colors, spacing, typography, radius } from '@core/theme/tokens';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
 import { PermissionManager } from '@core/permissions/PermissionManager';
 import { EventBus } from '@core/events/EventBus';
 
+type Nav = BottomTabNavigationProp<MainTabParams>;
+
 interface ChecklistItem {
   id: string;
   label: string;
   done: boolean;
+  accessibilityHint: string;
 }
 
 async function computeItems(): Promise<ChecklistItem[]> {
@@ -19,27 +25,32 @@ async function computeItems(): Promise<ChecklistItem[]> {
       id: 'guardian',
       label: 'Add a guardian',
       done: PreferencesStore.getBoolean(PREF_KEYS.CHECKLIST_GUARDIAN_ADDED),
+      accessibilityHint: 'Opens the Guardians tab to add your first emergency contact',
     },
     {
       id: 'location',
       label: 'Grant location access',
       done: locationGranted,
+      accessibilityHint: 'Opens device settings so you can allow location access',
     },
     {
       id: 'pin',
       label: 'Set a duress PIN',
       // Written by DuressPinService.setRealPin() — avoids a shared→feature import
       done: PreferencesStore.getBoolean(PREF_KEYS.CHECKLIST_DURESS_PIN_SET),
+      accessibilityHint: 'Opens the Settings tab to configure a duress PIN',
     },
     {
       id: 'test_sos',
       label: 'Do a test SOS',
       done: PreferencesStore.getBoolean(PREF_KEYS.CHECKLIST_TEST_SOS_DONE),
+      accessibilityHint: 'Hold the SOS button for 3 seconds then cancel to complete this step',
     },
   ];
 }
 
 export function SetupChecklist(): React.JSX.Element | null {
+  const navigation = useNavigation<Nav>();
   const [items, setItems] = useState<ChecklistItem[]>([]);
 
   const refresh = useCallback((): void => {
@@ -66,7 +77,7 @@ export function SetupChecklist(): React.JSX.Element | null {
   const pct = Math.round((doneCount / items.length) * 100);
 
   return (
-    <View style={styles.card} accessibilityRole="none" accessibilityLabel={`Setup checklist: ${pct}% complete`}>
+    <View style={styles.card} accessibilityRole="region" accessibilityLabel={`Setup checklist: ${pct}% complete`}>
       <View style={styles.header}>
         <Text style={styles.title}>Get started</Text>
         <Text style={styles.pct}>{pct}%</Text>
@@ -79,17 +90,29 @@ export function SetupChecklist(): React.JSX.Element | null {
 
       <View style={styles.items}>
         {items.map((item) => (
-          <View key={item.id} style={styles.row}>
+          <TouchableOpacity
+            key={item.id}
+            style={styles.row}
+            disabled={item.done}
+            onPress={() => {
+              if (item.id === 'guardian') { navigation.navigate('Guardians'); }
+              else if (item.id === 'location') { void Linking.openSettings(); }
+              else if (item.id === 'pin') { navigation.navigate('Settings'); }
+              // test_sos: no navigation — user acts on the SOS button above
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.label}: ${item.done ? 'complete' : 'not done'}`}
+            accessibilityHint={item.done ? undefined : item.accessibilityHint}
+            accessibilityState={{ disabled: item.done }}
+          >
             <View style={[styles.dot, item.done && styles.dotDone]}>
               {item.done && <Text style={styles.check}>✓</Text>}
             </View>
-            <Text
-              style={[styles.itemLabel, item.done && styles.itemLabelDone]}
-              accessibilityLabel={`${item.label}: ${item.done ? 'complete' : 'not done'}`}
-            >
+            <Text style={[styles.itemLabel, item.done && styles.itemLabelDone, styles.itemLabelFlex]}>
               {item.label}
             </Text>
-          </View>
+            {!item.done && <Text style={styles.chevron}>›</Text>}
+          </TouchableOpacity>
         ))}
       </View>
     </View>
@@ -164,5 +187,12 @@ const styles = StyleSheet.create({
   itemLabelDone: {
     color: colors.light.onBackground,
     textDecorationLine: 'line-through',
+  },
+  itemLabelFlex: {
+    flex: 1,
+  },
+  chevron: {
+    fontSize: 18,
+    color: colors.light.onSurfaceVariant,
   },
 });

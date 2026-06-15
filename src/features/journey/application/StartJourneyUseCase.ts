@@ -1,4 +1,3 @@
-import { Container, DI_TOKENS } from '@core/di/Container';
 import { EventBus } from '@core/events/EventBus';
 import { LocationService } from '@core/location/LocationService';
 import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
@@ -17,13 +16,10 @@ export interface StartJourneyInput {
 }
 
 export class StartJourneyUseCase {
-  private readonly journeyRepo: IJourneyRepository;
-  private readonly guardianRepo: IGuardianRepository;
-
-  constructor() {
-    this.journeyRepo  = Container.resolve<IJourneyRepository>(DI_TOKENS.IJourneyRepository);
-    this.guardianRepo = Container.resolve<IGuardianRepository>(DI_TOKENS.IGuardianRepository);
-  }
+  constructor(
+    private readonly journeyRepo: IJourneyRepository,
+    private readonly guardianRepo: IGuardianRepository,
+  ) {}
 
   async execute(input: StartJourneyInput): Promise<Journey> {
     // Cancel any active journey first

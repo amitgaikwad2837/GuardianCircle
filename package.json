@@ -104,22 +104,28 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 40,
-        "functions": 35,
-        "lines": 45,
-        "statements": 45
+        "branches": 50,
+        "functions": 50,
+        "lines": 55,
+        "statements": 55
       },
       "./src/features/sos/": {
-        "branches": 70,
-        "functions": 70,
-        "lines": 75,
-        "statements": 75
+        "branches": 85,
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
       },
       "./src/features/security/": {
-        "branches": 70,
-        "functions": 70,
-        "lines": 75,
-        "statements": 75
+        "branches": 85,
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
+      },
+      "./src/core/fcm/": {
+        "branches": 85,
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
       }
     },
     "collectCoverageFrom": [

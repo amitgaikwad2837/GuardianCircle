@@ -35,6 +35,14 @@ GuardianCircle relay has cryptographic proof it cannot read message content.
 
 SMS is **always** sent regardless of push notification status. Push notifications are an enhancement for users whose guardians also have the app installed.
 
+## Circuit Breaker
+
+`AlertDispatcher` tracks consecutive push failures. After 2 consecutive failures the circuit opens and push is skipped for that SOS event (SMS still fires). The circuit resets on the next successful push. This prevents the relay being a blocking dependency on the SOS critical path.
+
+## Guardian Ack Signature Verification
+
+Incoming `sos_ack` FCM messages are verified against the guardian's ECDSA signing key before emitting `sos:acknowledged`. The signed canonical payload is `"${incidentId}:${guardianId}"`. Unsigned acks (from pre-v2 guardian apps) are accepted with a logged warning during the roll-out period.
+
 ## Relay Source Code
 
 Located at `relay/functions/src/index.ts`. MIT licensed.

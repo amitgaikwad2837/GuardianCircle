@@ -2,6 +2,14 @@ import messaging from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { EventBus } from '@core/events/EventBus';
 import { Logger } from '@core/logger/Logger';
+import { IdentityManager } from '@core/crypto/IdentityManager';
+import { Container, DI_TOKENS } from '@core/di/Container';
+
+// Minimal interface — avoids importing from @features (architecture boundary).
+// The concrete guardian repo satisfies this structurally.
+interface GuardianSigningLookup {
+  getById(id: string): Promise<{ signingPublicKey?: string } | null>;
+}
 
 const TAG = 'FCMMessageHandler';
 
@@ -10,7 +18,8 @@ interface AckPayload {
   incidentId: string;
   guardianId: string;
   guardianName: string;
-  etaMinutes?: string; // FCM data values are always strings
+  etaMinutes?: string;  // FCM data values are always strings
+  signature?: string;   // ECDSA signature over "${incidentId}:${guardianId}"
 }
 
 function isAckPayload(data: Record<string, string | undefined>): data is AckPayload {
@@ -22,8 +31,51 @@ function isAckPayload(data: Record<string, string | undefined>): data is AckPayl
   );
 }
 
+async function verifyAckSignature(payload: AckPayload): Promise<boolean> {
+  if (!payload.signature) {
+    // Guardian apps paired before signature support was added are implicitly trusted
+    // until they update. Log a warning but do not block — field roll-out is gradual.
+    Logger.warn(TAG, 'sos_ack has no signature — accepting (pre-v2 guardian app)', {
+      guardianId: payload.guardianId,
+    });
+    return true;
+  }
+
+  try {
+    const guardianRepo = Container.resolve<GuardianSigningLookup>(DI_TOKENS.IGuardianRepository);
+    const guardian = await guardianRepo.getById(payload.guardianId).catch(() => null);
+
+    if (!guardian?.signingPublicKey) {
+      Logger.warn(TAG, 'sos_ack — guardian has no signingPublicKey, accepting', {
+        guardianId: payload.guardianId,
+      });
+      return true;
+    }
+
+    // Signed canonical message: "<incidentId>:<guardianId>"
+    const canonicalMsg = `${payload.incidentId}:${payload.guardianId}`;
+    const valid = await IdentityManager.verify(canonicalMsg, payload.signature, guardian.signingPublicKey);
+    if (!valid) {
+      Logger.warn(TAG, 'sos_ack signature INVALID — dropping spoofed ack', {
+        guardianId: payload.guardianId,
+        incidentId: payload.incidentId,
+      });
+    }
+    return valid;
+  } catch (err) {
+    Logger.warn(TAG, 'sos_ack signature verification failed with error — accepting', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+    // Fail-open on verification errors so a key-store crash doesn't silence all acks.
+    return true;
+  }
+}
+
 async function handleAck(data: Record<string, string | undefined>): Promise<void> {
   if (!isAckPayload(data)) {return;}
+
+  const verified = await verifyAckSignature(data);
+  if (!verified) {return;}
 
   const etaMinutes = data.etaMinutes != null ? parseInt(data.etaMinutes, 10) : undefined;
 
@@ -61,8 +113,13 @@ async function handleAck(data: Record<string, string | undefined>): Promise<void
   });
 }
 
+let registered = false;
+
 export const FCMMessageHandler = {
   register(): void {
+    if (registered) {return;}
+    registered = true;
+
     // Foreground messages
     messaging().onMessage(async (remoteMessage) => {
       const data = remoteMessage.data as Record<string, string | undefined> | undefined;

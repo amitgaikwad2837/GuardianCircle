@@ -44,7 +44,7 @@ interface GuardianAck {
 
 const TAG = 'HomeScreen';
 const HOLD_DURATION_MS   = 3000;
-const CANCEL_WINDOW_SECS = 10;
+const CANCEL_WINDOW_SECS = 15;
 const VIBRATE_HOLD_START = [0, 200, 100, 200];
 const VIBRATE_SOS_FIRED  = [0, 500, 200, 500, 200, 500];
 
@@ -380,7 +380,7 @@ export default function HomeScreen(): React.JSX.Element {
             onPressOut={onHoldEnd}
             activeOpacity={0.85}
             accessibilityRole="button"
-            accessibilityLabel="SOS emergency button"
+            accessibilityLabel="SOS Emergency Button"
             accessibilityHint={
               isActive
                 ? 'SOS is active. Tap Cancel SOS below to cancel.'
@@ -471,7 +471,7 @@ export default function HomeScreen(): React.JSX.Element {
             label="Check In"
             symbol="✓"
             color={theme.colors.safe}
-            onPress={() => navigation.navigate('Journey', { screen: 'CheckIn' } as never)}
+            onPress={() => navigation.navigate('Journey', { screen: 'CheckIn' })}
             accessibilityHint="Send a check-in to let guardians know you are safe"
           />
           <QuickActionButton

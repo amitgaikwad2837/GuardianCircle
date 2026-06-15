@@ -20,38 +20,49 @@ export interface LogEntry {
   meta?: Record<string, unknown>;
 }
 
-const MAX_ENTRIES = 500;
-const STORAGE_KEY = 'gc_logs';
+const MAX_ENTRIES   = 500;
+const STORAGE_KEY   = 'gc_logs';
+const FLUSH_DELAY   = 300; // ms — batch writes within this window
 const IS_DEV = __DEV__;
 
 const storage = new MMKV({ id: 'gc_logger' });
 
-function readBuffer(): LogEntry[] {
-  try {
-    const raw = storage.getString(STORAGE_KEY);
-    if (!raw) {return [];}
-    return JSON.parse(raw) as LogEntry[];
-  } catch {
-    return [];
-  }
+// In-memory buffer accumulates entries; a debounced timer flushes them to MMKV.
+// This converts O(n) MMKV read+parse+push+serialize+write per log call into
+// a single async write per flush window — critical on the SOS hot path.
+let memBuffer: LogEntry[] = [];
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleFlush(): void {
+  if (flushTimer !== null) {return;}
+  flushTimer = setTimeout(() => {
+    flushTimer = null;
+    flushToStorage();
+  }, FLUSH_DELAY);
 }
 
-function writeBuffer(entries: LogEntry[]): void {
+function flushToStorage(): void {
+  if (memBuffer.length === 0) {return;}
   try {
-    storage.set(STORAGE_KEY, JSON.stringify(entries));
+    const raw = storage.getString(STORAGE_KEY);
+    const persisted: LogEntry[] = raw ? (JSON.parse(raw) as LogEntry[]) : [];
+    const merged = [...persisted, ...memBuffer];
+    const trimmed = merged.length > MAX_ENTRIES
+      ? merged.slice(merged.length - MAX_ENTRIES)
+      : merged;
+    storage.set(STORAGE_KEY, JSON.stringify(trimmed));
+    memBuffer = [];
   } catch {
     // Silently fail — logging must never crash the app
   }
 }
 
 function append(entry: LogEntry): void {
-  const entries = readBuffer();
-  entries.push(entry);
-  // Trim to circular buffer size
-  if (entries.length > MAX_ENTRIES) {
-    entries.splice(0, entries.length - MAX_ENTRIES);
+  memBuffer.push(entry);
+  if (memBuffer.length > MAX_ENTRIES) {
+    memBuffer.splice(0, memBuffer.length - MAX_ENTRIES);
   }
-  writeBuffer(entries);
+  scheduleFlush();
 }
 
 function shouldWrite(level: LogLevel): boolean {
@@ -91,10 +102,16 @@ function log(
   append(entry);
 }
 
-/** Returns the last `count` log entries (most recent last). */
+/** Returns the last `count` log entries (most recent last), including unflushed in-memory entries. */
 function getRecentLogs(count = 100): LogEntry[] {
-  const all = readBuffer();
-  return all.slice(-count);
+  try {
+    const raw = storage.getString(STORAGE_KEY);
+    const persisted: LogEntry[] = raw ? (JSON.parse(raw) as LogEntry[]) : [];
+    const all = [...persisted, ...memBuffer];
+    return all.slice(-count);
+  } catch {
+    return [...memBuffer].slice(-count);
+  }
 }
 
 /** Clears all stored logs. Call on factory reset / data wipe. */

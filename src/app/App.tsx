@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from 'react';
-import { View, ActivityIndicator, StyleSheet, Text, NativeModules } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Text, NativeModules, Share, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -38,7 +38,7 @@ type InitState = 'loading' | 'ready' | 'error';
 
 export default function App(): React.JSX.Element {
   const [initState, setInitState] = useState<InitState>('loading');
-  const [initError, setInitError] = useState<string>('');
+  const [diagInfo, setDiagInfo] = useState<string>('');
 
   useEffect(() => {
     void bootstrapApp();
@@ -59,54 +59,63 @@ export default function App(): React.JSX.Element {
       await DatabaseManager.initialize();
       Logger.info(TAG, 'Database ready');
 
-      // 3b. Wire concrete implementations into the DI container
+      // 3. Wire concrete implementations into the DI container
       registerDependencies();
 
-      // 3. Ensure local identity key pairs exist (signing + FCM ECDH)
+      // 3b. Ensure local identity key pairs exist (signing + FCM ECDH)
       await IdentityManager.initialize();
       await IdentityManager.initializeFCMKey();
       Logger.info(TAG, 'Identity ready');
 
-      // 4. Register FCM push notification handler
-      await GuardianNotificationHandler.initialize();
+      // 4-9. Non-critical services — run in parallel so startup is not blocked by any one
+      await Promise.allSettled([
+        // 4. Register FCM push notification handler
+        GuardianNotificationHandler.initialize().catch((err: unknown) => {
+          Logger.warn(TAG, 'GuardianNotificationHandler init failed', { err });
+        }),
 
-      // 5. Subscribe to journey lifecycle events → persistent "Active Journey" notification
-      await JourneyNotificationService.initialize();
+        // 5. Subscribe to journey lifecycle events → persistent "Active Journey" notification
+        JourneyNotificationService.initialize().catch((err: unknown) => {
+          Logger.warn(TAG, 'JourneyNotificationService init failed', { err });
+        }),
 
-      // 6. Record SOS locations as unsafe geofences; alert on re-entry
-      await UnsafePlaceService.initialize();
+        // 6. Record SOS locations as unsafe geofences; alert on re-entry
+        UnsafePlaceService.initialize().catch((err: unknown) => {
+          Logger.warn(TAG, 'UnsafePlaceService init failed', { err });
+        }),
 
-      // 7. Start volume-button SOS trigger (Vol-Down + Vol-Up chord → emergency SOS)
-      if (NativeModules.BackgroundTaskModule) {
-        await (NativeModules.BackgroundTaskModule as { startVolumeSOSTrigger: () => Promise<void> })
-          .startVolumeSOSTrigger()
-          .catch((err: unknown) => {
-            Logger.warn(TAG, 'Volume SOS trigger init failed', { err });
-            EventBus.emit('system:capability_degraded', {
-              capability: 'volume_sos',
-              reason: err instanceof Error ? err.message : 'Volume SOS unavailable',
-            });
+        // 7. Start volume-button SOS trigger (Vol-Down + Vol-Up chord → emergency SOS)
+        NativeModules.BackgroundTaskModule
+          ? (NativeModules.BackgroundTaskModule as { startVolumeSOSTrigger: () => Promise<void> })
+              .startVolumeSOSTrigger()
+              .catch((err: unknown) => {
+                Logger.warn(TAG, 'Volume SOS trigger init failed', { err });
+                EventBus.emit('system:capability_degraded', {
+                  capability: 'volume_sos',
+                  reason: err instanceof Error ? err.message : 'Volume SOS unavailable',
+                });
+              })
+          : Promise.resolve(),
+
+        // 8. BLE mesh — offline SOS beaconing + relay scanning
+        BleMeshOrchestrator.init().catch((err: unknown) => {
+          Logger.warn(TAG, 'BLE mesh init failed', { err });
+          EventBus.emit('system:capability_degraded', {
+            capability: 'ble',
+            reason: err instanceof Error ? err.message : 'BLE mesh unavailable',
           });
-      }
+        }),
 
-      // 8. BLE mesh — offline SOS beaconing + relay scanning
-      await BleMeshOrchestrator.init().catch((err: unknown) => {
-        Logger.warn(TAG, 'BLE mesh init failed', { err });
-        EventBus.emit('system:capability_degraded', {
-          capability: 'ble',
-          reason: err instanceof Error ? err.message : 'BLE mesh unavailable',
-        });
-      });
-
-      // 9. FCM message handler — guardian acknowledgements and deep link routing
-      FCMMessageHandler.register();
+        // 9. FCM message handler — guardian acknowledgements and deep link routing
+        Promise.resolve(FCMMessageHandler.register()),
+      ]);
 
       Logger.info(TAG, 'Bootstrap complete');
       setInitState('ready');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Startup failed';
       Logger.error(TAG, 'Bootstrap failed', { message });
-      setInitError(message);
+      setDiagInfo(`Error: ${message}\nTime: ${new Date().toISOString()}`);
       setInitState('error');
     }
   }
@@ -123,11 +132,22 @@ export default function App(): React.JSX.Element {
     return (
       <View style={styles.splash}>
         <Text style={styles.errorTitle}>Unable to start GuardianCircle</Text>
-        <Text style={styles.errorBody}>{initError}</Text>
-        <Text style={styles.errorHint}>
-          If this error persists, reinstalling the app may resolve it.
-          Your alert contacts will still receive SMS even if the app cannot open.
+        <Text style={styles.errorBody}>
+          Something went wrong during startup. Please force-close the app and reopen it.
+          If the problem continues, reinstalling may help.
         </Text>
+        <Text style={styles.errorHint}>
+          Your guardians can still receive SMS alerts from your device directly.
+        </Text>
+        <TouchableOpacity
+          style={styles.copyButton}
+          onPress={() => { void Share.share({ message: diagInfo, title: 'GuardianCircle diagnostic info' }); }}
+          accessibilityRole="button"
+          accessibilityLabel="Copy diagnostic info"
+          accessibilityHint="Copies error details to clipboard so you can share them for support"
+        >
+          <Text style={styles.copyButtonText}>Copy diagnostic info</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -178,13 +198,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#424242',
     textAlign: 'center',
-    marginBottom: 16,
-    fontFamily: 'monospace',
+    marginBottom: 12,
+    lineHeight: 22,
   },
   errorHint: {
     fontSize: 13,
     color: '#757575',
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 20,
+  },
+  copyButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#757575',
+  },
+  copyButtonText: {
+    fontSize: 13,
+    color: '#424242',
+    fontWeight: '600',
   },
 });

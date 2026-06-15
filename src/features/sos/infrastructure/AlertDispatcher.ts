@@ -3,11 +3,16 @@ import type { Guardian } from '@features/guardian/domain/entities/Guardian';
 import { SmsService, SmsTemplates } from '@core/sms/SMSService';
 import { EncryptionService } from '@core/crypto/EncryptionService';
 import { IdentityManager } from '@core/crypto/IdentityManager';
-import { PreferencesStore, PREF_KEYS } from '@core/storage/preferences/PreferencesStore';
+import { SecureStore } from '@core/storage/secure/SecureStore';
 import { Logger } from '@core/logger/Logger';
 import { Linking } from 'react-native';
 
 const TAG = 'AlertDispatcher';
+
+// Circuit breaker: skip push after 2 consecutive failures to avoid blocking SOS on dead relay.
+// Resets when a push succeeds.
+let consecutivePushFailures = 0;
+const PUSH_CIRCUIT_OPEN_AFTER = 2;
 
 export class AlertDispatcher implements IAlertDispatcher {
   async dispatchSMS(
@@ -69,10 +74,15 @@ export class AlertDispatcher implements IAlertDispatcher {
       return 'no_token';
     }
 
-    const relayEndpoint = PreferencesStore.getString(PREF_KEYS.RELAY_ENDPOINT);
+    const relayEndpoint = await SecureStore.get('relay_endpoint');
     if (!relayEndpoint) {
       Logger.debug(TAG, 'dispatchPushNotification — relay endpoint not configured');
       return 'no_token';
+    }
+
+    if (consecutivePushFailures >= PUSH_CIRCUIT_OPEN_AFTER) {
+      Logger.warn(TAG, 'dispatchPushNotification — circuit open, skipping push after consecutive failures');
+      return 'failed';
     }
 
     try {
@@ -115,15 +125,19 @@ export class AlertDispatcher implements IAlertDispatcher {
       }
 
       if (!response.ok) {
-        Logger.warn(TAG, 'dispatchPushNotification relay error', { status: response.status });
+        consecutivePushFailures += 1;
+        Logger.warn(TAG, 'dispatchPushNotification relay error', { status: response.status, consecutivePushFailures });
         return 'failed';
       }
 
+      consecutivePushFailures = 0;
       Logger.info(TAG, 'dispatchPushNotification sent');
       return 'sent';
     } catch (err) {
+      consecutivePushFailures += 1;
       Logger.error(TAG, 'dispatchPushNotification failed', {
         error: err instanceof Error ? err.message : String(err),
+        consecutivePushFailures,
       });
       return 'failed';
     }
