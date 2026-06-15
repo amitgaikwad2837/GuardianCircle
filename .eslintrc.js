@@ -17,6 +17,8 @@ module.exports = {
       allowExpressions: true,
       allowTypedFunctionExpressions: true,
       allowHigherOrderFunctions: true,
+      // makeStyles returns StyleSheet.create output — type is fully inferred
+      allowedNames: ['makeStyles', 'createTagged'],
     }],
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-misused-promises': 'error',
