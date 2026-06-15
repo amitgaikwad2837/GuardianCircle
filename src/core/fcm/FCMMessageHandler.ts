@@ -78,7 +78,7 @@ async function handleAck(data: Record<string, string | undefined>): Promise<void
   const verified = await verifyAckSignature(data);
   if (!verified) {return;}
 
-  const etaMinutes = data.etaMinutes != null ? parseInt(data.etaMinutes, 10) : undefined;
+  const etaMinutes = data.etaMinutes !== null && data.etaMinutes !== undefined ? parseInt(data.etaMinutes, 10) : undefined;
 
   Logger.info(TAG, 'sos_ack received', {
     guardianId: data.guardianId,
@@ -101,7 +101,7 @@ async function handleAck(data: Record<string, string | undefined>): Promise<void
     importance: 4, // HIGH
   });
 
-  const etaLabel = etaMinutes != null ? ` — ETA ${etaMinutes} min` : '';
+  const etaLabel = etaMinutes !== null && etaMinutes !== undefined ? ` — ETA ${etaMinutes} min` : '';
 
   await notifee.displayNotification({
     title: `${data.guardianName} acknowledged`,

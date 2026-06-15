@@ -89,7 +89,7 @@ class BleMeshServiceImpl {
   onBeaconReceived(cb: BeaconCallback): () => void {
     if (!native || !NativeModules.BluetoothMeshModule) { return () => {}; }
     if (!this.emitter) {
-      this.emitter = new NativeEventEmitter(NativeModules.BluetoothMeshModule);
+      this.emitter = new NativeEventEmitter(native);
     }
     const sub = this.emitter.addListener('GC_MESH_BEACON_RECEIVED', cb);
     return () => sub.remove();

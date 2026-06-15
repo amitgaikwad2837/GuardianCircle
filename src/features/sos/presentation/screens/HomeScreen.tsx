@@ -405,7 +405,7 @@ export default function HomeScreen(): React.JSX.Element {
         </Text>
 
         {/* Non-blocking capability warning (auto-dismisses after 8s) */}
-        {capabilityWarning != null && (
+        {capabilityWarning !== null && capabilityWarning !== undefined && (
           <View
             style={styles.capabilityWarning}
             accessibilityLiveRegion="polite"
@@ -419,7 +419,7 @@ export default function HomeScreen(): React.JSX.Element {
         {isActive && acknowledgements.length > 0 && (
           <View style={styles.ackBanner} accessibilityLiveRegion="polite">
             {acknowledgements.map((ack) => {
-              const etaLabel = ack.etaMinutes != null ? ` — ETA ${ack.etaMinutes} min` : ' — on the way';
+              const etaLabel = ack.etaMinutes !== null && ack.etaMinutes !== undefined ? ` — ETA ${ack.etaMinutes} min` : ' — on the way';
               return (
                 <Text
                   key={ack.guardianId}
