@@ -197,7 +197,15 @@ jobs:
           avd-name: Pixel_6_API_34
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: npm run test:e2e
+          script: |
+            mkdir -p artifacts
+            adb logcat -c
+            adb logcat > artifacts/logcat.txt &
+            LOGCAT_PID=$!
+            npm run test:e2e
+            TEST_EXIT=$?
+            kill $LOGCAT_PID || true
+            exit $TEST_EXIT
 
       - name: Upload Detox artifacts on failure
         if: failure()
