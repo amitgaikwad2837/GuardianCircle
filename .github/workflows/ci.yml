@@ -87,14 +87,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Android debug APK
-        run: npm run build:android:debug
+      - name: Build Android debug APK + test APK
+        run: cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          # Upload the full apk/ tree so both the app APK and the instrumentation
+          # test APK (androidTest/debug/) are available for the E2E job.
+          path: android/app/build/outputs/apk/
 
   android-release-build:
     name: Android Release Build
@@ -174,7 +176,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: debug-apk
-          path: android/app/build/outputs/apk/debug/
+          path: android/app/build/outputs/apk/
 
       - name: Enable KVM for hardware acceleration
         run: |
